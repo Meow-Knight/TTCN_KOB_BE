@@ -47,6 +47,11 @@ python manage.py makemigrations app --empty
 python manage.py startapp *module_name*
 ```
 
+**Creating a superuser:**
+```
+python manage.py createsuperuser
+```
+
 # Dump notes
 
 **Create new app:**
