@@ -7,9 +7,9 @@ def initial_producer_data(apps, schema_editor):
     producer_model = apps.get_model("api_beer", "Producer")
 
     producers = [
-        producer_model(name="Nhà máy Bia Heineken Đà Nẵng",
+        producer_model(name="Bia Heineken",
                        address="Đường số 6, KCN Hòa Khánh, Phường Hòa Khánh Bắc,, Liên Chiểu, Đà Nẵng, Việt Nam"),
-        producer_model(name="Nhà Máy Bia Hiệp Hoàng",
+        producer_model(name="Bia Hiệp Hoàng",
                        address="86 Ngô Thế Vinh, Hòa Cường, Hải Châu, Đà Nẵng, Việt Nam"),
     ]
 

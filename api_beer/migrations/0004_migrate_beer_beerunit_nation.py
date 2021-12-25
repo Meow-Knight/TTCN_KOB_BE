@@ -40,7 +40,7 @@ def initial_data(apps, schema_editor):
     vietnam.save()
     netherlands.save()
 
-    producer_heineken = producer_model.objects.filter(name='Nhà máy Bia Heineken Đà Nẵng').first()
+    producer_heineken = producer_model.objects.filter(name='Bia Heineken').first()
 
     beers = [
         beer_model(name="Heineken Silver",
