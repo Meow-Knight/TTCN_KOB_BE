@@ -11,7 +11,8 @@ class BeerViewSet(BaseViewSet):
     serializer_class = BeerSerializer
     queryset = Beer.objects.all()
     serializer_map = {
-        "list": ListBeerSerializer
+        "list": ListBeerSerializer,
+        "retrieve": ListBeerSerializer,
     }
 
     def create(self, request, *args, **kwargs):
