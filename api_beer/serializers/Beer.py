@@ -14,3 +14,9 @@ class ListBeerSerializer(serializers.ModelSerializer):
         model = Beer
         fields = '__all__'
         depth = 1
+
+class BeerDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Beer
+        fields = '__all__'
+        depth = 1

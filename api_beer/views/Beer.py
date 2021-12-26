@@ -1,8 +1,10 @@
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api_beer.serializers import BeerSerializer, ListBeerSerializer
-from api_beer.models import Beer
+from api_beer.serializers import BeerSerializer, ListBeerSerializer, BeerPhotoSerializer
+from api_beer.models import Beer, BeerPhoto
+from api_beer.serializers.Beer import BeerDetailSerializer
 from api_beer.services import BeerService
 from api_base.views import BaseViewSet
 
@@ -40,3 +42,19 @@ class BeerViewSet(BaseViewSet):
 
         self.queryset = query_set
         return super().list(request, *args, **kwargs)
+
+    @action(detail=True, methods=['get'])
+    def info(self, request, *args, **kwargs):
+        # fetch : infor beer + load image of each beer
+        # fetch : a list about beers that relate with upon beer
+        beer = BeerDetailSerializer(self.get_object())
+        photo = BeerPhoto.objects.filter(beer=self.get_object())
+        # select * from Beer where Beer.origin_nation = beer.origin_nation
+        # select * from Beer
+        # select * from Beer
+        if photo.exists():
+            photo = BeerPhotoSerializer(photo.first())
+            return Response({"detail": beer.data, "photo": photo.data},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response({"details": "Cannot get beer detail information"}, status=status.HTTP_400_BAD_REQUEST)
