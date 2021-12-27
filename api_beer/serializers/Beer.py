@@ -21,9 +21,3 @@ class BeerDetailSerializer(serializers.ModelSerializer):
         model = Beer
         fields = '__all__'
         depth = 1
-
-    def to_representation(self, instance):
-        data = super(BeerDetailSerializer, self).to_representation(instance)
-        photo = BeerPhoto.objects.filter(beer=data.id)
-        data["photo"] = list(photo)
-        return data
