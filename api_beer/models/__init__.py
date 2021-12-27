@@ -3,3 +3,5 @@ from .Nation import Nation
 from .BeerUnit import BeerUnit
 from .Beer import Beer
 from .BeerPhoto import BeerPhoto
+from .BeerDiscount import BeerDiscount
+from .BeerShipment import BeerShipment

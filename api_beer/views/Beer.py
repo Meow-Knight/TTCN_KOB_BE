@@ -1,5 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from api_beer.serializers import BeerSerializer, ListBeerSerializer, BeerPhotoSerializer
@@ -10,10 +11,15 @@ from api_base.views import BaseViewSet
 
 
 class BeerViewSet(BaseViewSet):
+    permission_classes = [IsAdminUser]
     serializer_class = BeerSerializer
     queryset = Beer.objects.all()
     serializer_map = {
-        "list": ListBeerSerializer
+        "list": ListBeerSerializer,
+        "retrieve": ListBeerSerializer,
+    }
+    permission_map = {
+        "list": [IsAuthenticated]
     }
 
     def create(self, request, *args, **kwargs):
