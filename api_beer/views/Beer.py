@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
-from api_beer.serializers import BeerSerializer, ListBeerSerializer
+from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer
 from api_beer.models import Beer
 from api_beer.services import BeerService
 from api_base.views import BaseViewSet
@@ -14,7 +14,7 @@ class BeerViewSet(BaseViewSet):
     queryset = Beer.objects.all()
     serializer_map = {
         "list": ListBeerSerializer,
-        "retrieve": ListBeerSerializer,
+        "retrieve": RetrieveBeerSerializer,
     }
     permission_map = {
         "list": [IsAuthenticated],
