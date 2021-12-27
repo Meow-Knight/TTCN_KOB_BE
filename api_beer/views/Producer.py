@@ -1,14 +1,18 @@
-from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
 from api_beer.serializers import ProducerSerializer
 from api_beer.models import Producer
+from api_base.views import BaseViewSet
 
 
-class CreateProducerViewSet(viewsets.ModelViewSet):
+class CreateProducerViewSet(BaseViewSet):
     permission_classes = [IsAdminUser]
     serializer_class = ProducerSerializer
     queryset = Producer.objects.all()
+    permission_map = {
+        "list": [],
+        "retrieve": []
+    }
 
     def list(self, request, *args, **kwargs):
         query_set = Producer.objects

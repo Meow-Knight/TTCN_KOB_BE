@@ -17,8 +17,8 @@ class BeerViewSet(BaseViewSet):
         "retrieve": RetrieveBeerSerializer,
     }
     permission_map = {
-        "list": [IsAuthenticated],
-        "retrieve": [IsAuthenticated]
+        "list": [],
+        "retrieve": []
     }
 
     def create(self, request, *args, **kwargs):
