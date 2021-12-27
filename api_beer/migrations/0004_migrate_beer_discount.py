@@ -5,27 +5,41 @@ from datetime import datetime
 
 
 def initial_data(apps, schema_editor):
-    discount_model = apps.get_model("api_beer", "BeerDiscount")
+    discount_model = apps.get_model("api_beer", "Discount")
+    beer_discount_model = apps.get_model("api_beer", "BeerDiscount")
     beer_model = apps.get_model("api_beer", "Beer")
 
-    heineken_beer_1 = beer_model.objects.filter(name="Heineken Silver").first()
-    heineken_beer_2 = beer_model.objects.filter(name="Heineken Sleek").first()
-    huda_beer_1 = beer_model.objects.filter(name="Lốc 6 lon bia Huda Ice Blast 330ml").first()
-    budweiser_beer_1 = beer_model.objects.filter(name="Budweiser lon cao").first()
+    beers = beer_model.objects.all()
 
-    discounts = [discount_model(name="Giáng sinh 2021", start_date=datetime(2021, 12, 20),
-                                end_date=datetime(2021, 12, 30), discount_percent=5, beer=heineken_beer_1),
-                 discount_model(name="Tết nguyên đán 2022 cùng Heineken Silver", start_date=datetime(2022, 1, 17),
-                                end_date=datetime(2022, 2, 10), discount_percent=10, beer=heineken_beer_1),
-                 discount_model(name="Tết nguyên đán 2022 cùng Heineken Sleek", start_date=datetime(2022, 1, 15),
-                                end_date=datetime(2022, 2, 15), discount_percent=7, beer=heineken_beer_2),
-                 discount_model(name="Đón giáng sinh Huda Ice Blask", start_date=datetime(2022, 1, 15),
-                                end_date=datetime(2022, 2, 15), discount_percent=12, beer=huda_beer_1),
-                 discount_model(name="Budweiser chào mừng Quốc tế phụ nữ", start_date=datetime(2022, 3, 8),
-                                end_date=datetime(2022, 3, 20), discount_percent=10, beer=budweiser_beer_1),
-                 discount_model(name="Tết nguyên đán 2022 cùng Budweiser", start_date=datetime(2022, 1, 15),
-                                end_date=datetime(2022, 2, 15), discount_percent=7, beer=budweiser_beer_1)]
-    discount_model.objects.bulk_create(discounts)
+    discount_1 = discount_model(name="Giáng sinh 2021", start_date=datetime(2021, 12, 20),
+                                end_date=datetime(2021, 3, 30))
+    discount_2 = discount_model(name="Tết nguyên đán 2022", start_date=datetime(2021, 12, 17),
+                                end_date=datetime(2022, 2, 10))
+    discount_3 = discount_model(name="Happy Last Weekend 2021", start_date=datetime(2021, 12, 1),
+                                end_date=datetime(2022, 3, 1))
+
+    discount_1.save()
+    discount_2.save()
+    discount_3.save()
+
+    beer_discounts = [
+        beer_discount_model(discount_percent=12, beer=beers[0], discount=discount_1),
+        beer_discount_model(discount_percent=7, beer=beers[1], discount=discount_1),
+        beer_discount_model(discount_percent=10, beer=beers[2], discount=discount_1),
+        beer_discount_model(discount_percent=12, beer=beers[3], discount=discount_1),
+
+        beer_discount_model(discount_percent=20, beer=beers[4], discount=discount_2),
+        beer_discount_model(discount_percent=15, beer=beers[5], discount=discount_2),
+        beer_discount_model(discount_percent=5, beer=beers[6], discount=discount_2),
+
+        beer_discount_model(discount_percent=25, beer=beers[7], discount=discount_3),
+        beer_discount_model(discount_percent=13, beer=beers[8], discount=discount_3),
+        beer_discount_model(discount_percent=13, beer=beers[9], discount=discount_3),
+        beer_discount_model(discount_percent=15, beer=beers[10], discount=discount_3),
+        beer_discount_model(discount_percent=8, beer=beers[11], discount=discount_3),
+    ]
+
+    beer_discount_model.objects.bulk_create(beer_discounts)
 
 
 class Migration(migrations.Migration):

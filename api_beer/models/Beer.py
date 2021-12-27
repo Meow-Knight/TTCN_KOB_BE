@@ -8,12 +8,12 @@ class Beer(TimeStampedModel):
     name = models.CharField(max_length=50, unique=True)
     alcohol_concentration = models.FloatField()
     capacity = models.CharField(max_length=50)
-    origin_nation = models.ForeignKey(Nation, null=True, blank=True, on_delete=models.SET_NULL)
+    origin_nation = models.ForeignKey(Nation, null=True, blank=True, on_delete=models.SET_NULL, related_name="beer")
     price = models.FloatField()
     bottle_amount = models.IntegerField(default=1)
     describe = models.TextField(null=True, blank=True)
-    producer = models.ForeignKey(Producer, null=True, blank=True, on_delete=models.SET_NULL)
-    beer_unit = models.ForeignKey(BeerUnit, on_delete=models.CASCADE)
+    producer = models.ForeignKey(Producer, null=True, blank=True, on_delete=models.SET_NULL, related_name="beer")
+    beer_unit = models.ForeignKey(BeerUnit, on_delete=models.CASCADE, related_name="beer")
 
     class Meta:
         db_table = "beer"
