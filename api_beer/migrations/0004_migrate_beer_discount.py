@@ -10,20 +10,28 @@ def initial_data(apps, schema_editor):
 
     heineken_beer_1 = beer_model.objects.filter(name="Heineken Silver").first()
     heineken_beer_2 = beer_model.objects.filter(name="Heineken Sleek").first()
+    huda_beer_1 = beer_model.objects.filter(name="Lốc 6 lon bia Huda Ice Blast 330ml").first()
+    budweiser_beer_1 = beer_model.objects.filter(name="Budweiser lon cao").first()
 
     discounts = [discount_model(name="Giáng sinh 2021", start_date=datetime(2021, 12, 20),
                                 end_date=datetime(2021, 12, 30), discount_percent=5, beer=heineken_beer_1),
                  discount_model(name="Tết nguyên đán 2022 cùng Heineken Silver", start_date=datetime(2022, 1, 17),
                                 end_date=datetime(2022, 2, 10), discount_percent=10, beer=heineken_beer_1),
                  discount_model(name="Tết nguyên đán 2022 cùng Heineken Sleek", start_date=datetime(2022, 1, 15),
-                                end_date=datetime(2022, 2, 15), discount_percent=7, beer=heineken_beer_2)]
+                                end_date=datetime(2022, 2, 15), discount_percent=7, beer=heineken_beer_2),
+                 discount_model(name="Đón giáng sinh Huda Ice Blask", start_date=datetime(2022, 1, 15),
+                                end_date=datetime(2022, 2, 15), discount_percent=12, beer=huda_beer_1),
+                 discount_model(name="Budweiser chào mừng Quốc tế phụ nữ", start_date=datetime(2022, 3, 8),
+                                end_date=datetime(2022, 3, 20), discount_percent=10, beer=budweiser_beer_1),
+                 discount_model(name="Tết nguyên đán 2022 cùng Budweiser", start_date=datetime(2022, 1, 15),
+                                end_date=datetime(2022, 2, 15), discount_percent=7, beer=budweiser_beer_1)]
     discount_model.objects.bulk_create(discounts)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api_beer', '0007_beerdiscount'),
+        ('api_beer', '0003_migrate_beer_beerunit_nation'),
     ]
 
     operations = [
