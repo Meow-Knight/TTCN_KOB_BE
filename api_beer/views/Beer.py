@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from api_beer.serializers import BeerSerializer, ListBeerSerializer, BeerPhotoSerializer
 from api_beer.models import Beer, BeerPhoto
 from api_beer.serializers.Beer import BeerDetailSerializer
+from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer
+from api_beer.models import Beer
 from api_beer.services import BeerService
 from api_base.views import BaseViewSet
 
@@ -16,10 +18,11 @@ class BeerViewSet(BaseViewSet):
     queryset = Beer.objects.all()
     serializer_map = {
         "list": ListBeerSerializer,
-        "retrieve": ListBeerSerializer,
+        "retrieve": RetrieveBeerSerializer,
     }
     permission_map = {
-        "list": [IsAuthenticated]
+        "list": [],
+        "retrieve": []
     }
 
     def create(self, request, *args, **kwargs):
