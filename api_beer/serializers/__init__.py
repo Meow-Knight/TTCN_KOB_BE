@@ -1,6 +1,6 @@
 from .Producer import ProducerSerializer
 from .BeerUnit import BeerUnitSerializer
 from .Nation import NationSerializer
-from .Beer import BeerSerializer, ListBeerSerializer
+from .Beer import BeerSerializer, ListBeerSerializer, DetailBeerSerializer, SameProducerBeerSerializer
 from .BeerPhoto import BeerPhotoSerializer
 from .BeerShipment import BeerShipmentSerializer, ListBeerShipmentSerializer
