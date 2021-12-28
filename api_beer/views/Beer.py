@@ -1,8 +1,10 @@
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer
+from api_beer.models import BeerPhoto
+from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, BeerPhotoSerializer
 from api_beer.models import Beer
 from api_beer.services import BeerService
 from api_base.views import BaseViewSet
@@ -47,3 +49,17 @@ class BeerViewSet(BaseViewSet):
 
         self.queryset = query_set
         return super().list(request, *args, **kwargs)
+
+    @action(detail=True, methods=['get'])
+    def info(self, request, pk, *args, **kwargs):
+        beer = self.get_object()
+        photos = BeerPhoto.objects.filter(beer=beer.id).values('link')
+        same_producer_beers = Beer.objects.filter(producer=beer.producer).exclude(id=beer.id)
+        beer = ListBeerSerializer(beer)
+        beer_producer_serializer = ItemBeerSerializer(same_producer_beers, many=True)
+        res_data = {"details": beer.data}
+        if photos.exists():
+            res_data['photos'] = map(lambda photo: photo['link'], list(photos))
+        if same_producer_beers.exists():
+            res_data['same_producer_beers'] = beer_producer_serializer.data
+        return Response(res_data, status=status.HTTP_200_OK)
