@@ -51,6 +51,12 @@ class BeerViewSet(BaseViewSet):
         self.queryset = query_set
         return super().list(request, *args, **kwargs)
 
+    @action(detail=False, methods=['get'])
+    def homepage(self, request, *args, **kwargs):
+        random_amount = int(request.query_params.get("random_amount", "4"))
+        response_data = BeerService.get_homepage_data(random_amount)
+        return Response(response_data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['get'])
     def info(self, request, pk, *args, **kwargs):
         beer = self.get_object()
@@ -64,9 +70,3 @@ class BeerViewSet(BaseViewSet):
         if same_producer_beers.exists():
             res_data['same_producer_beers'] = beer_producer_serializer.data
         return Response(res_data, status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=['get'])
-    def homepage(self, request, *args, **kwargs):
-        random_amount = int(request.query_params.get("random_amount", "4"))
-        response_data = BeerService.get_homepage_data(random_amount)
-        return Response(response_data, status=status.HTTP_200_OK)
