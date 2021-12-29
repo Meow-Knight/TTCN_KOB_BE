@@ -1,11 +1,13 @@
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from api_beer.serializers import BeerSerializer, ListBeerSerializer, SameProducerBeerSerializer
-from api_beer.models import Beer, BeerPhoto
-from api_beer.serializers.Beer import DetailBeerSerializer
+
+from api_beer.models import BeerPhoto
+from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, BeerPhotoSerializer
+from api_beer.models import Beer
+
 from api_beer.services import BeerService
 from api_base.views import BaseViewSet
 
@@ -16,10 +18,12 @@ class BeerViewSet(BaseViewSet):
     queryset = Beer.objects.all()
     serializer_map = {
         "list": ListBeerSerializer,
-        "retrieve": ListBeerSerializer,
+        "retrieve": RetrieveBeerSerializer,
     }
     permission_map = {
-        "list": [IsAuthenticated]
+        "list": [],
+        "retrieve": [],
+        "info": []
     }
 
     def create(self, request, *args, **kwargs):
@@ -51,14 +55,14 @@ class BeerViewSet(BaseViewSet):
 
     @action(detail=True, methods=['get'])
     def info(self, request, pk, *args, **kwargs):
-        beer = Beer.objects.get(pk=pk)
-        #photo = BeerPhoto.objects.filter(beer=beer.id)
-        beer_producer = Beer.objects.filter(producer=beer.producer)
-        if beer:
-            beer = DetailBeerSerializer(beer)
-            beer_producer = SameProducerBeerSerializer(beer_producer, many=True)
-            #photo = BeerPhotoSerializer(photo.first())
-            return Response({"detail": beer.data, "same_producer_beers": beer_producer.data},
-                            status=status.HTTP_200_OK)
-        else:
-            return Response({"details": "Cannot get beer detail information"}, status=status.HTTP_400_BAD_REQUEST)
+        beer = self.get_object()
+        photos = BeerPhoto.objects.filter(beer=beer.id).values('link')
+        same_producer_beers = Beer.objects.filter(producer=beer.producer).exclude(id=beer.id)
+        beer = ListBeerSerializer(beer)
+        beer_producer_serializer = ItemBeerSerializer(same_producer_beers, many=True)
+        res_data = {"details": beer.data}
+        if photos.exists():
+            res_data['photos'] = map(lambda photo: photo['link'], list(photos))
+        if same_producer_beers.exists():
+            res_data['same_producer_beers'] = beer_producer_serializer.data
+        return Response(res_data, status=status.HTTP_200_OK)

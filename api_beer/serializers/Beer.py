@@ -1,5 +1,8 @@
 import datetime
 from rest_framework import serializers
+from api_beer.models import Beer, BeerPhoto, BeerDiscount
+
+from api_beer.models import Beer, BeerPhoto
 from django.db import models
 from api_beer.models import Beer, BeerPhoto, BeerDiscount
 
@@ -17,19 +20,23 @@ class ListBeerSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-# class BeerDetailSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Beer
-#         fields = '__all__'
-#         depth = 1
 
-class SameProducerBeerSerializer(serializers.ModelSerializer):
+class RetrieveBeerSerializer(serializers.ModelSerializer):
     class Meta:
-        models = Beer
-        fields = ('id', 'name', 'capacity', 'price',)
+        model = Beer
+        fields = '__all__'
+        depth = 1
+
+    def to_representation(self, instance):
+        data = super(RetrieveBeerSerializer, self).to_representation(instance)
+        beer_id = data['id']
+        photos = BeerPhoto.objects.filter(beer_id=beer_id).values("link")
+        if photos:
+            data["photos"] = list(photos)
+        return data
 
 
-class DetailBeerSerializer(serializers.ModelSerializer):
+class ItemBeerSerializer(serializers.ModelSerializer):
     """
     This serializer contains beer record include extend fields:
     - First photo
@@ -37,7 +44,7 @@ class DetailBeerSerializer(serializers.ModelSerializer):
     """
 
     def to_representation(self, instance):
-        data = super(DetailBeerSerializer, self).to_representation(instance)
+        data = super(ItemBeerSerializer, self).to_representation(instance)
         beer_id = data['id']
         photos = BeerPhoto.objects.filter(beer_id=beer_id)
         if photos.exists():

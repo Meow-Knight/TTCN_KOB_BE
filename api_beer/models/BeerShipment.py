@@ -8,7 +8,7 @@ class BeerShipment(TimeStampedModel):
     shipment_date = models.DateField()
     amount = models.IntegerField()
     price = models.FloatField()
-    beer = models.ForeignKey(Beer, on_delete=models.CASCADE)
+    beer = models.ForeignKey(Beer, on_delete=models.CASCADE, related_name="beer_shipment")
 
     class Meta:
         db_table = "beer_shipment"

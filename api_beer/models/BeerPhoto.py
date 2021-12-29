@@ -6,7 +6,7 @@ from api_beer.models import Beer
 
 class BeerPhoto(TimeStampedModel):
     link = models.CharField(max_length=200)
-    beer = models.ForeignKey(Beer, on_delete=models.CASCADE)
+    beer = models.ForeignKey(Beer, on_delete=models.CASCADE, related_name="beer_photo")
 
     class Meta:
         db_table = "beer_photo"
