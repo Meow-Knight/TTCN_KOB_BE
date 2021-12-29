@@ -3,11 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from api_beer.models import BeerPhoto
-from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, BeerPhotoSerializer
-from api_beer.models import Beer
-from api_beer.services import BeerService
 from api_base.views import BaseViewSet
+from api_beer.models import Beer, BeerPhoto, BeerDiscount, Discount
+from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, \
+    DiscountWithItemBeerSerializer
+from api_beer.services import BeerService
 
 
 class BeerViewSet(BaseViewSet):
@@ -20,7 +20,8 @@ class BeerViewSet(BaseViewSet):
     }
     permission_map = {
         "list": [],
-        "retrieve": []
+        "retrieve": [],
+        "homepage": []
     }
 
     def create(self, request, *args, **kwargs):
@@ -63,3 +64,9 @@ class BeerViewSet(BaseViewSet):
         if same_producer_beers.exists():
             res_data['same_producer_beers'] = beer_producer_serializer.data
         return Response(res_data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def homepage(self, request, *args, **kwargs):
+        random_amount = int(request.query_params.get("random_amount", "4"))
+        response_data = BeerService.get_homepage_data(random_amount)
+        return Response(response_data, status=status.HTTP_200_OK)
