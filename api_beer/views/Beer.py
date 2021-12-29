@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 from api_beer.models import BeerPhoto
-from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, BeerPhotoSerializer
+from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, BeerPhotoSerializer, BeerDetailSerializer
 from api_beer.models import Beer
 from api_beer.services import BeerService
 from api_base.views import BaseViewSet
@@ -52,7 +52,8 @@ class BeerViewSet(BaseViewSet):
         beer = self.get_object()
         photos = BeerPhoto.objects.filter(beer=beer.id).values('link')
         same_producer_beers = Beer.objects.filter(producer=beer.producer).exclude(id=beer.id)
-        beer = ListBeerSerializer(beer)
+        #beer = ListBeerSerializer(beer)
+        beer = BeerDetailSerializer(beer)
         beer_producer_serializer = ItemBeerSerializer(same_producer_beers, many=True)
         res_data = {"details": beer.data}
         if photos.exists():
