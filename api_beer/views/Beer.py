@@ -3,11 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-
 from api_beer.models import BeerPhoto
 from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, BeerPhotoSerializer
 from api_beer.models import Beer
-
 from api_beer.services import BeerService
 from api_base.views import BaseViewSet
 
@@ -16,10 +14,6 @@ class BeerViewSet(BaseViewSet):
     permission_classes = [IsAdminUser]
     serializer_class = BeerSerializer
     queryset = Beer.objects.all()
-    serializer_map = {
-        "list": ListBeerSerializer,
-        "retrieve": RetrieveBeerSerializer,
-    }
     permission_map = {
         "list": [],
         "retrieve": [],

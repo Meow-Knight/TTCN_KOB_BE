@@ -1,9 +1,7 @@
 import datetime
-from rest_framework import serializers
-from api_beer.models import Beer, BeerPhoto, BeerDiscount
 
-from api_beer.models import Beer, BeerPhoto
-from django.db import models
+
+from rest_framework import serializers
 from api_beer.models import Beer, BeerPhoto, BeerDiscount
 
 
