@@ -21,7 +21,8 @@ class BeerViewSet(BaseViewSet):
     permission_map = {
         "list": [],
         "retrieve": [],
-        "homepage": []
+        "homepage": [],
+        "info": []
     }
 
     def create(self, request, *args, **kwargs):
