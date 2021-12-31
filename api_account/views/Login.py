@@ -67,7 +67,7 @@ class MyGoogleLogin(APIView):
             account.first_name = data['given_name']
             account.last_name = data['family_name']
             account.avatar = data.get("picture")
-            account.username = 'gg_' + data['email'].split('@')[0]
+            account.username = data['email'].split('@')[0]
             account.password = make_password(BaseUserManager().make_random_password())
             user_role = Role.objects.get(name=RoleConstants.USER)
             account.role = user_role
