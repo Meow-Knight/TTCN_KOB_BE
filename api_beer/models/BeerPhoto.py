@@ -10,3 +10,4 @@ class BeerPhoto(TimeStampedModel):
 
     class Meta:
         db_table = "beer_photo"
+        ordering = ('-created_at',)

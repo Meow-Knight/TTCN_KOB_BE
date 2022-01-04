@@ -1,14 +1,10 @@
+import random
+
 from django.db import transaction
 
 from api_beer.models import BeerPhoto, Beer, Discount
-
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-
-import random
-
 from api_beer.serializers import ItemBeerSerializer, DiscountWithItemBeerSerializer
+from api_beer.services import BeerPhotoService
 
 
 class BeerService:
@@ -18,9 +14,9 @@ class BeerService:
     def create_beer_with_photos(cls, beer_serializer, images):
         beer = beer_serializer.save()
         beer_photos = []
-        for image in images:
-            upload_data = cloudinary.uploader.upload(image, folder="sgroup/kob/beers/")
-            beer_photos.append(BeerPhoto(link=upload_data.get("url"), beer=beer))
+        links = BeerPhotoService.upload_images(images)
+        for link in links:
+            beer_photos.append(BeerPhoto(link=link, beer=beer))
         BeerPhoto.objects.bulk_create(beer_photos)
 
     @classmethod

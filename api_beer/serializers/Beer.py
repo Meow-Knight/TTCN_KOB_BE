@@ -3,6 +3,7 @@ import datetime
 from rest_framework import serializers
 
 from api_beer.models import Beer, BeerPhoto, BeerDiscount
+from api_beer.serializers import BeerPhotoSerializer
 
 
 class BeerSerializer(serializers.ModelSerializer):
@@ -27,9 +28,10 @@ class RetrieveBeerSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super(RetrieveBeerSerializer, self).to_representation(instance)
         beer_id = data['id']
-        photos = BeerPhoto.objects.filter(beer_id=beer_id).values("link")
+        photos = BeerPhoto.objects.filter(beer_id=beer_id)
+        photo_serializer = BeerPhotoSerializer(photos, many=True)
         if photos:
-            data["photos"] = list(photos)
+            data["photos"] = photo_serializer.data
         return data
 
 

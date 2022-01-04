@@ -19,6 +19,7 @@ class BeerViewSet(BaseViewSet):
         "list": ListBeerSerializer,
         "retrieve": RetrieveBeerSerializer,
     }
+
     permission_map = {
         "list": [],
         "retrieve": [],
@@ -79,11 +80,6 @@ class BeerViewSet(BaseViewSet):
         query_set = Beer.objects
         search_query = request.query_params.get("q", "").strip()
         if search_query:
-            search_field_query = request.query_params.get("field")
-            # if search_field_query:
-            #     # TODO: check field existed?
-            #     q = Q(**{"%s__icontains" % search_field_query: search_query})
-            # else:
             q = Q(name__icontains=search_query) | Q(producer__name__icontains=search_query)
             query_set = query_set.filter(q)
         serializer = SearchItemBeerSerializer(query_set, many=True)
