@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from api_beer.models import Cart
+from api_beer.models import Cart, Beer
 from api_beer.serializers import ItemBeerSerializer
 
 
@@ -22,4 +22,5 @@ class BeerDetailCartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ('id', 'amount', 'beer')
+        fields = ('id', 'amount', 'beer',)
+
