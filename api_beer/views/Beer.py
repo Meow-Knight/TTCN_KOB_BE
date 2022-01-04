@@ -1,12 +1,13 @@
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 from api_base.views import BaseViewSet
-from api_beer.models import Beer, BeerPhoto, BeerDiscount, Discount
+from api_beer.models import Beer, BeerPhoto
 from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, \
-    DiscountWithItemBeerSerializer
+    SearchItemBeerSerializer
 from api_beer.services import BeerService
 
 
@@ -22,7 +23,8 @@ class BeerViewSet(BaseViewSet):
         "list": [],
         "retrieve": [],
         "homepage": [],
-        "info": []
+        "info": [],
+        "user_search": []
     }
 
     def create(self, request, *args, **kwargs):
@@ -71,3 +73,18 @@ class BeerViewSet(BaseViewSet):
         if same_producer_beers.exists():
             res_data['same_producer_beers'] = beer_producer_serializer.data
         return Response(res_data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def user_search(self, request, *args, **kwargs):
+        query_set = Beer.objects
+        search_query = request.query_params.get("q", "").strip()
+        if search_query:
+            search_field_query = request.query_params.get("field")
+            # if search_field_query:
+            #     # TODO: check field existed?
+            #     q = Q(**{"%s__icontains" % search_field_query: search_query})
+            # else:
+            q = Q(name__icontains=search_query) | Q(producer__name__icontains=search_query)
+            query_set = query_set.filter(q)
+        serializer = SearchItemBeerSerializer(query_set, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
