@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'api_account',
     'api_admin',
     'api_beer',
+    'api_order',
 
     # swagger
     'drf_yasg',
