@@ -19,3 +19,10 @@ class AccountInforCheckoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ('username', 'email','address', 'phone', 'age')
+
+
+class SimpleAccountSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Account
+        fields = ('id', 'first_name', 'last_name', 'avatar')
