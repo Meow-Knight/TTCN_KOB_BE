@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api_account.serializers import ReviewSerializer, ListReviewByBeerSerializer
+from api_account.services import ReviewService
 from api_account.models import Review
 from api_base.views import BaseViewSet
 from api_beer.models import Beer
@@ -22,7 +23,15 @@ class ReviewViewSet(BaseViewSet):
 
     def create(self, request, *args, **kwargs):
         request.data['account'] = request.user.id
-        return super().create(request)
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            beer = serializer.validated_data.get('beer')
+            if ReviewService.can_create_review(request.user, beer):
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"detail": "You cannot create review on this beer. You have to buy it before"},
+                                status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         review = self.get_object()
@@ -65,3 +74,16 @@ class ReviewViewSet(BaseViewSet):
         if review.account == account:
             return super().destroy(request, *args, **kwargs)
         return Response({"detail": "You are not the owner of this review"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def check_can_review(self, request, *args, **kwargs):
+        beer_id = request.query_params.get("beer_id")
+        beer = Beer.objects.filter(id=beer_id)
+        if not beer.exists():
+            return Response({"detail": "Invalid beer id in url param"}, status=status.HTTP_400_BAD_REQUEST)
+        account = request.user
+        beer = beer.first()
+        if ReviewService.can_create_review(account, beer):
+            return Response({"detail": True})
+        else:
+            return Response({"detail": False})
