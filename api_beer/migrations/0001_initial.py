@@ -26,6 +26,8 @@ class Migration(migrations.Migration):
                 ('price', models.FloatField()),
                 ('bottle_amount', models.IntegerField(default=1)),
                 ('describe', models.TextField(blank=True, null=True)),
+                ('expiration_date', models.CharField(max_length=50, null=True)),
+                ('note', models.TextField(null=True)),
             ],
             options={
                 'db_table': 'beer',
@@ -116,6 +118,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'beer_photo',
+                'ordering': ('-created_at',),
             },
         ),
         migrations.AddField(

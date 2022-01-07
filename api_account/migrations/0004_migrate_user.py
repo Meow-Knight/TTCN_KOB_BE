@@ -19,6 +19,9 @@ def initial_user_data(apps, schema_editor):
                                       username=user['email'].split('@')[0],
                                       avatar=user.get('avatar', 'https://res.cloudinary.com/ddqzgiilu/image/upload/v1640923830/SGroup/KOB/abstract-user-flat-3_mk2mve.png'),
                                       email=user['email'],
+                                      address=user['address'],
+                                      phone=user['phone'],
+                                      age=user['age'],
                                       password=BaseUserManager().make_random_password(),
                                       role=user_role))
 
@@ -27,7 +30,7 @@ def initial_user_data(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('api_account', '0006_alter_account_role'),
+        ('api_account', '0003_migrate_admin'),
     ]
 
     operations = [
