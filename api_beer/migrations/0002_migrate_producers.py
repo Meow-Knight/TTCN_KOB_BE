@@ -2,33 +2,23 @@
 
 from django.db import migrations
 
+from api_beer.constants import ProducerMigration
+
 
 def initial_producer_data(apps, schema_editor):
     producer_model = apps.get_model("api_beer", "Producer")
 
-    producers = [
-        producer_model(name="Heineken",
-                       company_name="Heineken N.V.",
-                       address="Đường số 6, KCN Hòa Khánh, Phường Hòa Khánh Bắc,, Liên Chiểu, Đà Nẵng, Việt Nam"),
-        producer_model(name="Budweiser",
-                       company_name="Anheuser-Busch Inbev",
-                       address="86 Ngô Thế Vinh, Hòa Cường, Hải Châu, Đà Nẵng, Việt Nam"),
-        producer_model(name="Sapporo",
-                       company_name="Sapporo Breweries",
-                       address="5 Đường Cây Keo, Tam Phú, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam"),
-        producer_model(name="Corona",
-                       company_name="Cerveceria Modelo",
-                       address="52 Đường 2, Bình Chiểu, Thủ Đức, Bình Dương, Việt Nam"),
-        producer_model(name="Huda",
-                       company_name="Carlsberg",
-                       address="Trường Sơn, Phường 2, Tân Bình, Thành phố Hồ Chí Minh, Việt Nam"),
-    ]
+    producers = []
+    for producer in ProducerMigration:
+        producers.append(producer_model(id=producer.value["id"],
+                                        name=producer.value["name"],
+                                        company_name=producer.value["company_name"],
+                                        address=producer.value["address"]))
 
     producer_model.objects.bulk_create(producers)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('api_beer', '0001_initial'),
     ]
