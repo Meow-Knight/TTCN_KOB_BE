@@ -18,7 +18,7 @@ from api_order.services import OrderService
 class OrderViewSet(BaseViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated ]
+    permission_classes = [permissions.IsAuthenticated, ]
     permission_map = {
         "checkout": [permissions.IsAuthenticated],
         "create_order": [permissions.IsAuthenticated],
@@ -54,7 +54,7 @@ class OrderViewSet(BaseViewSet):
         request.data['account'] = request.user.id
         ser = CUOrderSerializer(data=request.data)
         if ser.is_valid(raise_exception=True):
-            res = OrderService.create_order_and_order_detail(ser, carts)
+            res = OrderService.create_order_and_order_detail(ser, carts, request, order_status)
             return Response(res, status=status.HTTP_201_CREATED)
 
     @action(methods=['get'], detail=False)

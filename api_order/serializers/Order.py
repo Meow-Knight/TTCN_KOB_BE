@@ -1,8 +1,9 @@
 from rest_framework import serializers
 
 from api_account.models import Account
-from api_order.models import Order, OrderStatus, OrderDetail
-from api_order.serializers import OrderDetailSerializer, ListOrderDetailSerializer
+from api_account.serializers import AccountInforOrderDetailSerializer
+from api_order.models import Order, OrderStatus, OrderDetail, Progress
+from api_order.serializers import OrderDetailSerializer, ListOrderDetailSerializer, RetrieveProgressSerializer
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -44,8 +45,10 @@ class RetrieveOrderSerializer(serializers.ModelSerializer):
         order_status = OrderStatus.objects.get(pk=data.get('order_status'))
         data['order_status'] = order_status.name
 
-        # chỗ này thêm giúp t cái progress với
-        data['progress'] = []
+        progress = Progress.objects.filter(order=data['id'])
+        if progress.exists():
+            progress = RetrieveProgressSerializer(progress, many=True)
+            data['progress'] = progress.data
 
         order_detail = OrderDetail.objects.filter(order=data.get('id'))
         data['order_detail'] = list(ListOrderDetailSerializer(order_detail, many=True).data)
@@ -53,7 +56,7 @@ class RetrieveOrderSerializer(serializers.ModelSerializer):
         account = Account.objects.filter(pk=data['account'])
         if account.exists():
             account = account.first()
-            data['account'] = {"id": account.id, "username": account.username}
+            data['account'] = AccountInforOrderDetailSerializer(account).data
 
         return data
 
