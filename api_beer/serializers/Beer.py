@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from api_beer.models import Beer, BeerPhoto, BeerDiscount
 from api_beer.serializers import BeerPhotoSerializer
+from api_order.models import OrderDetail
 
 
 class BeerSerializer(serializers.ModelSerializer):
@@ -90,4 +91,38 @@ class SearchItemBeerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beer
         fields = ('id', 'name', 'capacity', 'price', 'alcohol_concentration', 'producer')
+        depth = 1
+
+
+class BeerOrderDetailSerializer(serializers.ModelSerializer):
+    """
+    This serializer contains beer record include extend fields:
+    - First photo
+    - Available sale discount
+    """
+
+    def to_representation(self, instance):
+        data = super(BeerOrderDetailSerializer, self).to_representation(instance)
+        beer_id = data['id']
+        photos = BeerPhoto.objects.filter(beer_id=beer_id)
+        if photos.exists():
+            data['photo'] = photos.first().link
+
+        order_detail = OrderDetail.objects.filter(beer=beer_id)
+        if order_detail.exists():
+            order_detail = order_detail.first()
+            discount = BeerDiscount.objects.filter(beer_id=beer_id,
+                                                   discount__start_date__lte=order_detail.created_at,
+                                                   discount__end_date__gte=order_detail.created_at,
+                                                   discount__is_activate=True).values("discount_percent")
+            if discount.exists():
+                discount = discount.first()
+                data.update(discount)
+                data['new_price'] = data['price'] - data['price'] * data['discount_percent'] / 100
+
+        return data
+
+    class Meta:
+        model = Beer
+        fields = ('id', 'name', 'capacity', 'price',)
         depth = 1
