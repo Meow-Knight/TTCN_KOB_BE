@@ -8,7 +8,7 @@ class AccountInfoSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = Account
-        fields = ('first_name', 'last_name', 'username', 'email', 'is_staff', 'is_superuser', 'phone', 'age', 'address')
+        fields = ('first_name', 'last_name', 'username', 'email', 'is_staff', 'is_superuser', 'phone', 'age', 'address', 'avatar')
 
 
 class GeneralInfoAccountSerializer(serializers.ModelSerializer):
