@@ -15,7 +15,7 @@ class BeerPhotoService:
     def upload_images(cls, images):
         links = []
         for image in images:
-            upload_data = CloudinaryService.upload_image(image)
+            upload_data = CloudinaryService.upload_beer_image(image)
             links.append(upload_data.get("url"))
 
         return links
