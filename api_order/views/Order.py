@@ -5,13 +5,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api_account.serializers import GeneralInfoAccountSerializer
+from api_base.pagination import PageNumberWithSizePagination
 from api_base.views import BaseViewSet
 from api_beer.models import Cart, Beer, Discount
 from api_beer.serializers import BeerDetailCartSerializer
 from api_order.models import Order, OrderStatus
-from api_order.serializers import OrderSerializer, CUOrderSerializer
-from api_order.models import Order, OrderStatus, OrderDetail
-from api_order.serializers import OrderSerializer, CUOrderSerializer, CUOrderDetailSerializer, RetrieveOrderSerializer
+from api_order.serializers import OrderSerializer, CUOrderSerializer, RetrieveOrderSerializer
 from api_order.serializers.Order import ListOrderSerializer
 from api_order.services import OrderService
 
@@ -19,19 +18,20 @@ from api_order.services import OrderService
 class OrderViewSet(BaseViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated, ]
+    permission_classes = [permissions.IsAdminUser, ]
     permission_map = {
         "checkout": [permissions.IsAuthenticated],
         "create_order": [permissions.IsAuthenticated],
         "list_order": [permissions.IsAuthenticated],
         "order_detail": [permissions.IsAuthenticated]
     }
+    pagination_class = PageNumberWithSizePagination
 
     @action(methods=['get'], detail=True, url_path='detail')
     def order_detail(self, request, *args, **kwargs):
         orders = Order.objects.filter(pk=kwargs.get('pk'), account=request.user)
         if orders.exists():
-            res = RetrieveOrderSerializer(orders, many=True)
+            res = RetrieveOrderSerializer(orders.first())
             return Response({'detail': res.data}, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'Order is not exists'}, status=status.HTTP_404_NOT_FOUND)
@@ -39,7 +39,12 @@ class OrderViewSet(BaseViewSet):
     @action(methods=['get'], detail=False, url_path='list')
     def list_order(self, request, *args, **kwargs):
         user = request.user
-        orders = user.order.all()
+        search_query = request.query_params.get("q", "")
+        orders = user.order.all().filter(order_status__name__icontains=search_query)
+        page = self.paginate_queryset(orders)
+        if page is not None:
+            res = ListOrderSerializer(page, many=True)
+            return self.get_paginated_response(res.data)
         res = ListOrderSerializer(orders, many=True)
         return Response({'detail': res.data}, status=status.HTTP_200_OK)
 
