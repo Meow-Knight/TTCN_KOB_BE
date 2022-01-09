@@ -1,4 +1,4 @@
-from .Producer import ProducerSerializer
+from .Producer import ProducerSerializer, DropdownProducerSerializer
 from .BeerUnit import BeerUnitSerializer
 from .Nation import NationSerializer
 from .BeerPhoto import BeerPhotoSerializer, CUBeerPhotoSerializer
