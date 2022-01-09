@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('api_beer', '0005_auto_20211227_1823'),
+        ('api_beer', '0004_migrate_beer_discount'),
     ]
 
     operations = [

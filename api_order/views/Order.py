@@ -1,16 +1,15 @@
 from datetime import date
 
-from django.db.models import Sum
 from rest_framework import status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api_account.serializers import AccountInforCheckoutSerializer
+from api_account.serializers import GeneralInfoAccountSerializer
 from api_base.views import BaseViewSet
 from api_beer.models import Cart, Beer, Discount
 from api_beer.serializers import BeerDetailCartSerializer
-from api_order.models import Order, OrderStatus, OrderDetail
-from api_order.serializers import OrderSerializer, CUOrderSerializer, CUOrderDetailSerializer, RetrieveOrderSerializer
+from api_order.models import Order, OrderStatus
+from api_order.serializers import OrderSerializer, CUOrderSerializer, RetrieveOrderSerializer
 from api_order.serializers.Order import ListOrderSerializer
 from api_order.services import OrderService
 
@@ -77,7 +76,7 @@ class OrderViewSet(BaseViewSet):
                     price = cart.beer.price - cart.beer.price * beer_discount.discount_percent / 100
             total_price = total_price + price * cart.amount
         total_discount = total_discount - total_price
-        user = AccountInforCheckoutSerializer(user)
+        user = GeneralInfoAccountSerializer(user)
         res_carts = BeerDetailCartSerializer(carts, many=True)
         res_data = {'user': user.data,
                     'carts': list(res_carts.data),

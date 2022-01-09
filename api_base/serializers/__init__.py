@@ -1,0 +1,1 @@
+from .BaseSerializer import ReadOnlyModelSerializer

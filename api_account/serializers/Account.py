@@ -1,23 +1,27 @@
 from rest_framework import serializers
 
 from api_account.models import Account
+from api_base.serializers import ReadOnlyModelSerializer
 
 
-class AccountInfoSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(read_only=True)
-    last_name = serializers.CharField(read_only=True)
-    is_staff = serializers.BooleanField(read_only=True)
-    username = serializers.CharField(read_only=True)
-    email = serializers.CharField(read_only=True)
+class AccountInfoSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = Account
-        fields = ('first_name', 'last_name', 'username', 'email', 'is_staff')
+        fields = ('first_name', 'last_name', 'username', 'email', 'is_staff', 'is_superuser', 'phone', 'age', 'address', 'avatar')
 
 
-class AccountInforCheckoutSerializer(serializers.ModelSerializer):
+class GeneralInfoAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
+        exclude = ('password', 'role', 'is_active', 'is_staff', 'is_superuser')
+
+
+class SimpleAccountSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Account
+        fields = ('id', 'first_name', 'last_name', 'avatar')
         fields = ('username', 'email','address', 'phone', 'age', 'first_name', 'last_name')
 
 

@@ -3,6 +3,8 @@
 from django.db import migrations
 from datetime import datetime
 
+from api_beer.constants import ProducerMigration, NationMigration
+
 
 def initial_data(apps, schema_editor):
     unit_model = apps.get_model("api_beer", "BeerUnit")
@@ -25,33 +27,24 @@ def initial_data(apps, schema_editor):
     loc_unit.save()
     thung_unit.save()
 
-    nations = [
-        nation_model(name="Mexico",
-                     flag_picture='https://res.cloudinary.com/ddqzgiilu/image/upload/v1638638121/SGroup/KOB/nations/mexico_jnwrnn.png'),
-        nation_model(name="Singapore",
-                     flag_picture='https://res.cloudinary.com/ddqzgiilu/image/upload/v1638638083/SGroup/KOB/nations/singapore_va8ebk.png'),
-    ]
-
+    nations = []
+    for nation in NationMigration:
+        nations.append(nation_model(id=nation.value["id"],
+                                    name=nation.value["name"],
+                                    flag_picture=nation.value["flag_picture"]))
     nation_model.objects.bulk_create(nations)
+    france = nation_model.objects.get(id=NationMigration.FRANCE.value['id'])
+    america = nation_model.objects.get(id=NationMigration.AMERICA.value['id'])
+    vietnam = nation_model.objects.get(id=NationMigration.VIETNAM.value['id'])
+    netherlands = nation_model.objects.get(id=NationMigration.NETHERLANDS.value['id'])
 
-    france = nation_model(name="France",
-                          flag_picture='https://res.cloudinary.com/ddqzgiilu/image/upload/v1638638055/SGroup/KOB/nations/france_k2kht3.png')
-    american = nation_model(name="USA",
-                            flag_picture='https://res.cloudinary.com/ddqzgiilu/image/upload/v1638638034/SGroup/KOB/nations/united-states_imyw4u.png')
-    vietnam = nation_model(name="Việt Nam",
-                           flag_picture='https://res.cloudinary.com/ddqzgiilu/image/upload/v1638638012/SGroup/KOB/nations/vietnam_1_wftv2l.png')
-    netherlands = nation_model(name="Hà Lan",
-                               flag_picture='https://res.cloudinary.com/ddqzgiilu/image/upload/v1638638899/SGroup/KOB/nations/netherlands_aafwe0.png')
-    france.save()
-    american.save()
-    vietnam.save()
-    netherlands.save()
-
-    producer_heineken = producer_model.objects.filter(name='Heineken').first()
-    producer_budweiser = producer_model.objects.filter(name='Budweiser').first()
-    producer_sapporo = producer_model.objects.filter(name='Sapporo').first()
-    producer_corona = producer_model.objects.filter(name='Corona').first()
-    producer_huda = producer_model.objects.filter(name='Huda').first()
+    producer_heineken = producer_model.objects.get(id=ProducerMigration.HEINEKEN.value['id'])
+    producer_budweiser = producer_model.objects.get(id=ProducerMigration.BUDWEISER.value['id'])
+    producer_sapporo = producer_model.objects.get(id=ProducerMigration.SAPPORO.value['id'])
+    producer_corona = producer_model.objects.get(id=ProducerMigration.CORONA.value['id'])
+    producer_huda = producer_model.objects.get(id=ProducerMigration.HUDA.value['id'])
+    producer_leffe = producer_model.objects.get(id=ProducerMigration.LEFFE.value['id'])
+    producer_strongbow = producer_model.objects.get(id=ProducerMigration.STRONGBOW.value['id'])
 
     beer_hei_1 = beer_model(name="Heineken Silver",
                             alcohol_concentration=4,
@@ -74,7 +67,7 @@ def initial_data(apps, schema_editor):
     beer_budweiser_1 = beer_model(name="Budweiser lon lùn",
                                   alcohol_concentration=5,
                                   capacity='500ml',
-                                  origin_nation=american,
+                                  origin_nation=america,
                                   price=326000,
                                   bottle_amount=12,
                                   describe='Thơm ngon đậm đà sản xuất từ mạch nha cùng hoa bia thượng hạng từ Hoa Kỳ và Châu Âu. 12 lon bia Budweiser 500ml hương vị cân bằng tuyệt đối giữa vị cay không quá nặng với vị ngọt ngào tinh tế, giòn tan. Cùng thiết kế lon cao thanh lịch sang trọng bia Budweiser là một lựa chọn không thể bỏ lỡ',
@@ -83,7 +76,7 @@ def initial_data(apps, schema_editor):
     beer_budweiser_2 = beer_model(name="Budweiser lon cao",
                                   alcohol_concentration=5,
                                   capacity='330ml',
-                                  origin_nation=american,
+                                  origin_nation=america,
                                   price=166000,
                                   bottle_amount=6,
                                   describe='Thơm ngon đậm đà sản xuất từ mạch nha cùng hoa bia thượng hạng từ Hoa Kỳ và Châu Âu. 12 lon bia Budweiser 500ml hương vị cân bằng tuyệt đối giữa vị cay không quá nặng với vị ngọt ngào tinh tế, giòn tan. Cùng thiết kế lon cao thanh lịch sang trọng bia Budweiser là một lựa chọn không thể bỏ lỡ',
@@ -161,6 +154,51 @@ def initial_data(apps, schema_editor):
                              describe='Huda Ice Blast được chắt lọc ở nhiệt độ -1 độ C giúp giữ trọn hương vị của bia, ngoài ra, bí quyết tạo nên hương trái cây tươi mát của Huda Ice Blast chính là ở bộ ba loại hoa bia đặc biệt nhập khẩu từ Đức và men bia từ Carlsberg Đan Mạch',
                              producer=producer_huda,
                              beer_unit=thung_unit)
+    beer_leffe_1 = beer_model(name="Thùng 24 chai bia Leffe Blonde 330ml",
+                             alcohol_concentration=6.6,
+                             capacity='330ml',
+                             origin_nation=america,
+                             price=1100000,
+                             bottle_amount=24,
+                             describe='Bia Leffe vàng là loại bia lâu đời và cổ điển nhất của Bỉ, bia có màu vàng sáng óng mang hương hoa quả nguyên chất, nhẹ, có vị đậm đà, mang hương vị của gừng, cam, nhục đậu khấu, để lại vị dịu ngọt nơi đầu lưỡi',
+                             producer=producer_leffe,
+                             beer_unit=thung_unit)
+    beer_leffe_2 = beer_model(name="Thùng 24 chai bia Leffe Brune 330ml",
+                             alcohol_concentration=6.5,
+                             capacity='330ml',
+                             origin_nation=france,
+                             price=1100000,
+                             bottle_amount=24,
+                             describe='Hương vị phong phú đậm đà là kết hợp của mùi caramel rang với hương vị ngọt nhẹ. Thùng 24 chai bia Leffe Brune 330ml là sự đồng hành tuyệt vời trong những bữa tiệc, liên hoan, tụ tập cùng gia đình và bạn bè, đồng nghiệp. Sản phẩm chất lượng từ thương hiệu bia Bỉ nổi tiếng Leffe',
+                             producer=producer_leffe,
+                             beer_unit=thung_unit)
+    beer_leffe_3 = beer_model(name="6 chai bia Leffe Brune 330ml",
+                             alcohol_concentration=6.5,
+                             capacity='330ml',
+                             origin_nation=france,
+                             price=280000,
+                             bottle_amount=6,
+                             describe='Bia Leffe nâu là một dòng bia Abbaye đặc trưng truyền thống của Bỉ, bia đầu được lên men phong phú và mịn màng, đánh thức vị cay đắng một cách ngọt ngào và tinh tế',
+                             producer=producer_leffe,
+                             beer_unit=thung_unit)
+    beer_strongbow_1 = beer_model(name="Thùng 24 chai Strongbow táo 330ml",
+                             alcohol_concentration=4.5,
+                             capacity='330ml',
+                             origin_nation=america,
+                             price=415000,
+                             bottle_amount=24,
+                             describe='Rất sảng khoái với độ ngọt dịu và hậu vị sang trọng kéo dài. Strongbow táo chai 330ml vị táo nguyên bản sẽ làm cho bạn cực kỳ dễ chịu và khi thưởng thức sẽ không cảm nhận được nhiều vị cồn vì thức uống này được lên men trực tiếp từ trái cây, phù hợp cho những cuộc trò chuyện, cuộc vui nhẹ nhàng',
+                             producer=producer_strongbow,
+                             beer_unit=thung_unit)
+    beer_strongbow_2 = beer_model(name="Lốc 6 lon Strongbow dâu đen 330ml",
+                             alcohol_concentration=4.5,
+                             capacity='330ml',
+                             origin_nation=america,
+                             price=118000,
+                             bottle_amount=6,
+                             describe='Sản phẩm chính hãng nước táo lên men Strongbow với hương vị dâu đen tươi mát, chua ngọt dễ chịu, phù hợp với nhiều đối tượng. Lốc 6 lon Strongbow dâu đen 330ml tiện lợi giá tốt, có thể dùng thay thế bia, các loại nước có cồn giúp bạn sảng khoái trong những cuộc vui cùng bạn bè, đồng nghiệp',
+                             producer=producer_strongbow,
+                             beer_unit=loc_unit)
     beer_hei_1.save()
     beer_hei_2.save()
     beer_huda_1.save()
@@ -173,62 +211,241 @@ def initial_data(apps, schema_editor):
     beer_sapporo_3.save()
     beer_budweiser_1.save()
     beer_budweiser_2.save()
+    beer_leffe_1.save()
+    beer_leffe_2.save()
+    beer_leffe_3.save()
+    beer_strongbow_1.save()
+    beer_strongbow_2.save()
 
     beer_photos = [
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593230/SGroup/KOB/beers/hei_1_1_ebopev.jpg", beer=beer_hei_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593333/SGroup/KOB/beers/hei_1_2_ineoqd.jpg", beer=beer_hei_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593334/SGroup/KOB/beers/hei_1_4_rifvgl.jpg", beer=beer_hei_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593336/SGroup/KOB/beers/hei_1_3_hj7myl.jpg", beer=beer_hei_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593527/SGroup/KOB/beers/hei_2_1_o8fb8g.jpg", beer=beer_hei_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593529/SGroup/KOB/beers/hei_2_2_y46lz4.jpg", beer=beer_hei_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593529/SGroup/KOB/beers/hei_2_3_kh8irv.jpg", beer=beer_hei_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593530/SGroup/KOB/beers/hei_2_4_oxnkhb.jpg", beer=beer_hei_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593543/SGroup/KOB/beers/hei_2_5_c7afl5.jpg", beer=beer_hei_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594112/SGroup/KOB/beers/huda_1_1_y3sod8.jpg", beer=beer_huda_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594113/SGroup/KOB/beers/huda_1_2_zr2ilf.jpg", beer=beer_huda_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594114/SGroup/KOB/beers/huda_1_3_nchlwg.jpg", beer=beer_huda_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594127/SGroup/KOB/beers/huda_1_4_atrmsi.jpg", beer=beer_huda_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594117/SGroup/KOB/beers/huda_1_5_prqfr0.jpg", beer=beer_huda_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594473/SGroup/KOB/beers/huda_2_1_besn1u.jpg", beer=beer_huda_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594458/SGroup/KOB/beers/huda_2_2_xhqadh.jpg", beer=beer_huda_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594459/SGroup/KOB/beers/huda_2_3_idhyfc.jpg", beer=beer_huda_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594460/SGroup/KOB/beers/huda_2_4_ntd3v2.jpg", beer=beer_huda_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594579/SGroup/KOB/beers/huda_2_5_jsnhwt.jpg", beer=beer_huda_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594465/SGroup/KOB/beers/huda_2_6_ofq0tv.jpg", beer=beer_huda_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594726/SGroup/KOB/beers/huda_3_1_c5cpmo.jpg", beer=beer_huda_3),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594727/SGroup/KOB/beers/huda_3_2_ecyonp.jpg", beer=beer_huda_3),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594727/SGroup/KOB/beers/huda_3_3_kxz7j6.jpg", beer=beer_huda_3),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594727/SGroup/KOB/beers/huda_3_4_pb6fly.jpg", beer=beer_huda_3),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594725/SGroup/KOB/beers/huda_3_5_gz3gl1.jpg", beer=beer_huda_3),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594954/SGroup/KOB/beers/huda_4_1_rdahrj.jpg", beer=beer_huda_4),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594458/SGroup/KOB/beers/huda_2_2_xhqadh.jpg", beer=beer_huda_4),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594459/SGroup/KOB/beers/huda_2_3_idhyfc.jpg", beer=beer_huda_4),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594460/SGroup/KOB/beers/huda_2_4_ntd3v2.jpg", beer=beer_huda_4),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594579/SGroup/KOB/beers/huda_2_5_jsnhwt.jpg", beer=beer_huda_4),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594465/SGroup/KOB/beers/huda_2_6_ofq0tv.jpg", beer=beer_huda_4),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595164/SGroup/KOB/beers/bud_1_1_aispie.jpg", beer=beer_budweiser_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595163/SGroup/KOB/beers/bud_1_2_zhcyvl.jpg", beer=beer_budweiser_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595163/SGroup/KOB/beers/bud_1_3_xfbtfq.jpg", beer=beer_budweiser_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595162/SGroup/KOB/beers/bud_1_4_uzfaju.jpg", beer=beer_budweiser_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595163/SGroup/KOB/beers/bud_1_5_vumhb1.jpg", beer=beer_budweiser_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595164/SGroup/KOB/beers/bud_1_1_aispie.jpg", beer=beer_budweiser_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595260/SGroup/KOB/beers/bud_2_2_crugpd.jpg", beer=beer_budweiser_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595163/SGroup/KOB/beers/bud_1_3_xfbtfq.jpg", beer=beer_budweiser_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595374/SGroup/KOB/beers/corona_1_1_bi6b7a.jpg", beer=beer_corona_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595374/SGroup/KOB/beers/corona_1_2_lgrhtp.jpg", beer=beer_corona_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595373/SGroup/KOB/beers/corona_1_3_xcmo8t.jpg", beer=beer_corona_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595373/SGroup/KOB/beers/corona_1_4_drwta4.jpg", beer=beer_corona_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595617/SGroup/KOB/beers/saporo_1_1_zmpezr.jpg", beer=beer_sapporo_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595617/SGroup/KOB/beers/saporo_1_2_breosk.jpg", beer=beer_sapporo_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595617/SGroup/KOB/beers/saporo_1_3_zicmdd.jpg", beer=beer_sapporo_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595617/SGroup/KOB/beers/saporo_1_4_c1labe.jpg", beer=beer_sapporo_1),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595742/SGroup/KOB/beers/saporo_2_1_uipqzd.jpg", beer=beer_sapporo_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595742/SGroup/KOB/beers/saporo_2_2_egjplk.jpg", beer=beer_sapporo_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595742/SGroup/KOB/beers/saporo_2_3_kallyy.jpg", beer=beer_sapporo_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595741/SGroup/KOB/beers/saporo_2_4_vvax5n.jpg", beer=beer_sapporo_2),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595853/SGroup/KOB/beers/saporo_3_1_vcqtwx.jpg", beer=beer_sapporo_3),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595853/SGroup/KOB/beers/saporo_3_2_by5epq.jpg", beer=beer_sapporo_3),
-        beer_photo_model(link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595853/SGroup/KOB/beers/saporo_3_3_x9rmyv.jpg", beer=beer_sapporo_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593230/SGroup/KOB/beers/hei_1_1_ebopev.jpg",
+            beer=beer_hei_1, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593333/SGroup/KOB/beers/hei_1_2_ineoqd.jpg",
+            beer=beer_hei_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593334/SGroup/KOB/beers/hei_1_4_rifvgl.jpg",
+            beer=beer_hei_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593336/SGroup/KOB/beers/hei_1_3_hj7myl.jpg",
+            beer=beer_hei_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593527/SGroup/KOB/beers/hei_2_1_o8fb8g.jpg",
+            beer=beer_hei_2, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593529/SGroup/KOB/beers/hei_2_2_y46lz4.jpg",
+            beer=beer_hei_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593529/SGroup/KOB/beers/hei_2_3_kh8irv.jpg",
+            beer=beer_hei_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593530/SGroup/KOB/beers/hei_2_4_oxnkhb.jpg",
+            beer=beer_hei_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640593543/SGroup/KOB/beers/hei_2_5_c7afl5.jpg",
+            beer=beer_hei_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594112/SGroup/KOB/beers/huda_1_1_y3sod8.jpg",
+            beer=beer_huda_1, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594113/SGroup/KOB/beers/huda_1_2_zr2ilf.jpg",
+            beer=beer_huda_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594114/SGroup/KOB/beers/huda_1_3_nchlwg.jpg",
+            beer=beer_huda_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594127/SGroup/KOB/beers/huda_1_4_atrmsi.jpg",
+            beer=beer_huda_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594117/SGroup/KOB/beers/huda_1_5_prqfr0.jpg",
+            beer=beer_huda_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594473/SGroup/KOB/beers/huda_2_1_besn1u.jpg",
+            beer=beer_huda_2, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594458/SGroup/KOB/beers/huda_2_2_xhqadh.jpg",
+            beer=beer_huda_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594459/SGroup/KOB/beers/huda_2_3_idhyfc.jpg",
+            beer=beer_huda_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594460/SGroup/KOB/beers/huda_2_4_ntd3v2.jpg",
+            beer=beer_huda_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594579/SGroup/KOB/beers/huda_2_5_jsnhwt.jpg",
+            beer=beer_huda_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594465/SGroup/KOB/beers/huda_2_6_ofq0tv.jpg",
+            beer=beer_huda_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594726/SGroup/KOB/beers/huda_3_1_c5cpmo.jpg",
+            beer=beer_huda_3, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594727/SGroup/KOB/beers/huda_3_2_ecyonp.jpg",
+            beer=beer_huda_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594727/SGroup/KOB/beers/huda_3_3_kxz7j6.jpg",
+            beer=beer_huda_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594727/SGroup/KOB/beers/huda_3_4_pb6fly.jpg",
+            beer=beer_huda_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594725/SGroup/KOB/beers/huda_3_5_gz3gl1.jpg",
+            beer=beer_huda_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594954/SGroup/KOB/beers/huda_4_1_rdahrj.jpg",
+            beer=beer_huda_4, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594458/SGroup/KOB/beers/huda_2_2_xhqadh.jpg",
+            beer=beer_huda_4),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594459/SGroup/KOB/beers/huda_2_3_idhyfc.jpg",
+            beer=beer_huda_4),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594460/SGroup/KOB/beers/huda_2_4_ntd3v2.jpg",
+            beer=beer_huda_4),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594579/SGroup/KOB/beers/huda_2_5_jsnhwt.jpg",
+            beer=beer_huda_4),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640594465/SGroup/KOB/beers/huda_2_6_ofq0tv.jpg",
+            beer=beer_huda_4),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595164/SGroup/KOB/beers/bud_1_1_aispie.jpg",
+            beer=beer_budweiser_1, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595163/SGroup/KOB/beers/bud_1_2_zhcyvl.jpg",
+            beer=beer_budweiser_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595163/SGroup/KOB/beers/bud_1_3_xfbtfq.jpg",
+            beer=beer_budweiser_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595162/SGroup/KOB/beers/bud_1_4_uzfaju.jpg",
+            beer=beer_budweiser_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595163/SGroup/KOB/beers/bud_1_5_vumhb1.jpg",
+            beer=beer_budweiser_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595164/SGroup/KOB/beers/bud_1_1_aispie.jpg",
+            beer=beer_budweiser_2, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595260/SGroup/KOB/beers/bud_2_2_crugpd.jpg",
+            beer=beer_budweiser_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595163/SGroup/KOB/beers/bud_1_3_xfbtfq.jpg",
+            beer=beer_budweiser_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595374/SGroup/KOB/beers/corona_1_1_bi6b7a.jpg",
+            beer=beer_corona_1, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595374/SGroup/KOB/beers/corona_1_2_lgrhtp.jpg",
+            beer=beer_corona_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595373/SGroup/KOB/beers/corona_1_3_xcmo8t.jpg",
+            beer=beer_corona_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595373/SGroup/KOB/beers/corona_1_4_drwta4.jpg",
+            beer=beer_corona_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595617/SGroup/KOB/beers/saporo_1_1_zmpezr.jpg",
+            beer=beer_sapporo_1, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595617/SGroup/KOB/beers/saporo_1_2_breosk.jpg",
+            beer=beer_sapporo_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595617/SGroup/KOB/beers/saporo_1_3_zicmdd.jpg",
+            beer=beer_sapporo_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595617/SGroup/KOB/beers/saporo_1_4_c1labe.jpg",
+            beer=beer_sapporo_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595742/SGroup/KOB/beers/saporo_2_1_uipqzd.jpg",
+            beer=beer_sapporo_2, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595742/SGroup/KOB/beers/saporo_2_2_egjplk.jpg",
+            beer=beer_sapporo_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595742/SGroup/KOB/beers/saporo_2_3_kallyy.jpg",
+            beer=beer_sapporo_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595741/SGroup/KOB/beers/saporo_2_4_vvax5n.jpg",
+            beer=beer_sapporo_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595853/SGroup/KOB/beers/saporo_3_1_vcqtwx.jpg",
+            beer=beer_sapporo_3, is_avatar=True),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595853/SGroup/KOB/beers/saporo_3_2_by5epq.jpg",
+            beer=beer_sapporo_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1640595853/SGroup/KOB/beers/saporo_3_3_x9rmyv.jpg",
+            beer=beer_sapporo_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641643993/SGroup/KOB/beers/leffe_1_dwnhig.jpg",
+            beer=beer_leffe_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641643994/SGroup/KOB/beers/leffe_2_mzo5pq.jpg",
+            beer=beer_leffe_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641643996/SGroup/KOB/beers/leffe_3_zclhd8.jpg",
+            beer=beer_leffe_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644206/SGroup/KOB/beers/leffe_2_1_wk1dom.jpg",
+            beer=beer_leffe_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644207/SGroup/KOB/beers/leffe_2_2_w3hyqk.jpg",
+            beer=beer_leffe_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644210/SGroup/KOB/beers/leffe_2_3_gwkt1w.jpg",
+            beer=beer_leffe_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644210/SGroup/KOB/beers/leffe_2_4_w70vvg.jpg",
+            beer=beer_leffe_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644439/SGroup/KOB/beers/leffe_3_1_ckwtjm.jpg",
+            beer=beer_leffe_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644440/SGroup/KOB/beers/leffe_3_2_cgv2ig.jpg",
+            beer=beer_leffe_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644442/SGroup/KOB/beers/leffe_3_3_jepfwn.jpg",
+            beer=beer_leffe_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644447/SGroup/KOB/beers/leffe_3_4_nlh42l.jpg",
+            beer=beer_leffe_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644450/SGroup/KOB/beers/leffe_3_5_hvjkpr.jpg",
+            beer=beer_leffe_3),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644681/SGroup/KOB/beers/strongbow_1_1_vjqnfr.jpg",
+            beer=beer_strongbow_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644682/SGroup/KOB/beers/strongbow_1_2_lutzzj.jpg",
+            beer=beer_strongbow_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644684/SGroup/KOB/beers/strongbow_1_3_dygnuj.jpg",
+            beer=beer_strongbow_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644687/SGroup/KOB/beers/strongbow_1_4_xscqo7.jpg",
+            beer=beer_strongbow_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644686/SGroup/KOB/beers/strongbow_1_5_amiqoc.jpg",
+            beer=beer_strongbow_1),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644904/SGroup/KOB/beers/strongbow_2_1_qcmt0y.jpg",
+            beer=beer_strongbow_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644904/SGroup/KOB/beers/strongbow_2_2_nsfbex.jpg",
+            beer=beer_strongbow_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644906/SGroup/KOB/beers/strongbow_2_3_gz8yzp.jpg",
+            beer=beer_strongbow_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644907/SGroup/KOB/beers/strongbow_2_5_cfvin3.jpg",
+            beer=beer_strongbow_2),
+        beer_photo_model(
+            link="https://res.cloudinary.com/ddqzgiilu/image/upload/v1641644908/SGroup/KOB/beers/strongbow_2_4_evnwgw.jpg",
+            beer=beer_strongbow_2),
     ]
 
     beer_photo_model.objects.bulk_create(beer_photos)
@@ -251,6 +468,11 @@ def initial_data(apps, schema_editor):
         shipment_model(shipment_date=datetime(2021, 11, 7), amount=50, price=700000, beer=beer_sapporo_2),
         shipment_model(shipment_date=datetime(2021, 6, 7), amount=100, price=1000000, beer=beer_sapporo_2),
         shipment_model(shipment_date=datetime(2021, 6, 7), amount=100, price=1000000, beer=beer_sapporo_3),
+        shipment_model(shipment_date=datetime(2021, 6, 7), amount=10, price=1000000, beer=beer_leffe_1),
+        shipment_model(shipment_date=datetime(2021, 6, 7), amount=50, price=4000000, beer=beer_leffe_2),
+        shipment_model(shipment_date=datetime(2021, 6, 7), amount=7, price=8000000, beer=beer_leffe_3),
+        shipment_model(shipment_date=datetime(2021, 6, 7), amount=20, price=14000000, beer=beer_strongbow_1),
+        shipment_model(shipment_date=datetime(2021, 6, 7), amount=15, price=8000000, beer=beer_strongbow_2),
     ]
 
     shipment_model.objects.bulk_create(beer_shipments)

@@ -10,8 +10,12 @@ load_dotenv()
 
 class CloudinaryService:
     @classmethod
-    def upload_image(cls, image):
+    def upload_beer_image(cls, image):
         return cloudinary.uploader.upload(image, folder=os.getenv('CLOUDINARY_BEER_PHOTO_FOLDER'))
+
+    @classmethod
+    def upload_avatar_user_image(cls, image):
+        return cloudinary.uploader.upload(image, folder=os.getenv('CLOUDINARY_AVATAR_USER_FOLDER'))
 
     @classmethod
     def delete_image(cls, pub_id):
