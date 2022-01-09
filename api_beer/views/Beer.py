@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from api_base.views import BaseViewSet
 from api_beer.models import Beer, BeerPhoto
 from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, \
-    SearchItemBeerSerializer
+    SearchItemBeerSerializer, DropdownBeerSerializer
 from api_beer.services import BeerService
 
 
@@ -25,7 +25,8 @@ class BeerViewSet(BaseViewSet):
         "retrieve": [],
         "homepage": [],
         "info": [],
-        "user_search": []
+        "user_search": [],
+        "get_all_with_name": []
     }
 
     def create(self, request, *args, **kwargs):
@@ -84,3 +85,7 @@ class BeerViewSet(BaseViewSet):
             query_set = query_set.filter(q)
         serializer = SearchItemBeerSerializer(query_set, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def get_all_with_name(self, request, *args, **kwargs):
+        return Response(DropdownBeerSerializer(self.get_queryset(), many=True).data)

@@ -20,6 +20,12 @@ class ListBeerSerializer(serializers.ModelSerializer):
         depth = 1
 
 
+class DropdownBeerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Beer
+        fields = ('id', 'name',)
+
+
 class RetrieveBeerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beer
