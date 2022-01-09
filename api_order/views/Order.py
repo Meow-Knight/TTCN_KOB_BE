@@ -10,6 +10,9 @@ from api_beer.models import Cart, Beer, Discount
 from api_beer.serializers import BeerDetailCartSerializer
 from api_order.models import Order, OrderStatus
 from api_order.serializers import OrderSerializer, CUOrderSerializer
+from api_order.models import Order, OrderStatus, OrderDetail
+from api_order.serializers import OrderSerializer, CUOrderSerializer, CUOrderDetailSerializer, RetrieveOrderSerializer
+from api_order.serializers.Order import ListOrderSerializer
 from api_order.services import OrderService
 
 
@@ -17,8 +20,31 @@ class OrderViewSet(BaseViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated, ]
+    permission_map = {
+        "checkout": [permissions.IsAuthenticated],
+        "create_order": [permissions.IsAuthenticated],
+        "list_order": [permissions.IsAuthenticated],
+        "order_detail": [permissions.IsAuthenticated]
+    }
 
-    def create(self, request, *args, **kwargs):
+    @action(methods=['get'], detail=True, url_path='detail')
+    def order_detail(self, request, *args, **kwargs):
+        orders = Order.objects.filter(pk=kwargs.get('pk'), account=request.user)
+        if orders.exists():
+            res = RetrieveOrderSerializer(orders, many=True)
+            return Response({'detail': res.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'Order is not exists'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['get'], detail=False, url_path='list')
+    def list_order(self, request, *args, **kwargs):
+        user = request.user
+        orders = user.order.all()
+        res = ListOrderSerializer(orders, many=True)
+        return Response({'detail': res.data}, status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False, url_path='create_order')
+    def create_order(self, request, *args, **kwargs):
         carts = request.data['carts']
         if OrderService.check_amount_order(carts) is False:
             return Response({'detail': 'Sorry. There are not enough items in stock to fulfill your order'},
@@ -29,7 +55,7 @@ class OrderViewSet(BaseViewSet):
         request.data['account'] = request.user.id
         ser = CUOrderSerializer(data=request.data)
         if ser.is_valid(raise_exception=True):
-            res = OrderService.create_order_and_order_detail(ser, carts)
+            res = OrderService.create_order_and_order_detail(ser, carts, request, order_status)
             return Response(res, status=status.HTTP_201_CREATED)
 
     @action(methods=['get'], detail=False)
