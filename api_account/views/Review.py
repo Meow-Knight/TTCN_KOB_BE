@@ -1,4 +1,4 @@
-from django.db.models import Case, When, Avg
+from django.db.models import Case, When, Avg, Count
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,7 +19,8 @@ class ReviewViewSet(BaseViewSet):
     permission_map = {
         "get_by_beer": [],
         "list": [],
-        "rate": []
+        "rate": [],
+        "get_all_rate_amount": []
     }
 
     def create(self, request, *args, **kwargs):
@@ -107,3 +108,13 @@ class ReviewViewSet(BaseViewSet):
         beer = beer.first()
         rate = Review.objects.filter(beer=beer).aggregate(beer_avg_rate=Avg('rate'))
         return Response(rate, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def get_all_rate_amount(self, request, *args, **kwargs):
+        beer_id = request.query_params.get("beer_id")
+        beer = Beer.objects.filter(id=beer_id)
+        if not beer:
+            return Response({"detail": "Invalid beer id in url param"}, status=status.HTTP_400_BAD_REQUEST)
+        beer = beer.first()
+        hehe = Review.objects.filter(beer=beer).values("rate").annotate(total=Count('*')).order_by('rate')
+        return Response(hehe, status=status.HTTP_200_OK)
