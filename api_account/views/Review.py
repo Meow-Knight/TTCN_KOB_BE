@@ -53,16 +53,17 @@ class ReviewViewSet(BaseViewSet):
     @action(detail=False, methods=['get'])
     def get_by_beer(self, request, *args, **kwargs):
         beer_id = request.query_params.get("beer_id")
+        rate = None
         try:
             rate = int(request.query_params.get("rate"))
-        except ValueError:
-            rate = 0
+        except Exception:
+            pass
         if not beer_id:
             return Response({"detail": "Beer id param not found"}, status=status.HTTP_400_BAD_REQUEST)
         beer = Beer.objects.filter(id=beer_id)
         if not beer.exists():
             return Response({"detail": "Beer id is not valid"}, status=status.HTTP_400_BAD_REQUEST)
-        if not (1 <= rate <= 5):
+        if rate and not (1 <= rate <= 5):
             return Response({"detail": "Rate is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
         beer = beer.first()
