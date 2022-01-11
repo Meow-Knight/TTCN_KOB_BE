@@ -1,4 +1,4 @@
-from django.db.models import Case, When
+from django.db.models import Case, When, Avg
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -18,7 +18,8 @@ class ReviewViewSet(BaseViewSet):
     }
     permission_map = {
         "get_by_beer": [],
-        "list": []
+        "list": [],
+        "rate": []
     }
 
     def create(self, request, *args, **kwargs):
@@ -51,14 +52,23 @@ class ReviewViewSet(BaseViewSet):
     @action(detail=False, methods=['get'])
     def get_by_beer(self, request, *args, **kwargs):
         beer_id = request.query_params.get("beer_id")
+        try:
+            rate = int(request.query_params.get("rate"))
+        except ValueError:
+            rate = 0
         if not beer_id:
             return Response({"detail": "Beer id param not found"}, status=status.HTTP_400_BAD_REQUEST)
         beer = Beer.objects.filter(id=beer_id)
         if not beer.exists():
             return Response({"detail": "Beer id is not valid"}, status=status.HTTP_400_BAD_REQUEST)
+        if not (1 <= rate <= 5):
+            return Response({"detail": "Rate is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
         beer = beer.first()
-        review_qs = Review.objects.filter(beer=beer)
+        if rate:
+            review_qs = Review.objects.filter(beer=beer, rate=rate)
+        else:
+            review_qs = Review.objects.filter(beer=beer)
         if not request.user.is_anonymous:
             account = request.user
             review_qs = review_qs.order_by(Case(When(account=account, then=0), default=1),
@@ -87,3 +97,13 @@ class ReviewViewSet(BaseViewSet):
             return Response({"detail": True})
         else:
             return Response({"detail": False})
+
+    @action(detail=False, methods=['get'])
+    def rate(self, request, *args, **kwargs):
+        beer_id = request.query_params.get("beer_id")
+        beer = Beer.objects.filter(id=beer_id)
+        if not beer:
+            return Response({"detail": "Invalid beer id in url param"}, status=status.HTTP_400_BAD_REQUEST)
+        beer = beer.first()
+        rate = Review.objects.filter(beer=beer).aggregate(beer_avg_rate=Avg('rate'))
+        return Response(rate, status=status.HTTP_200_OK)
