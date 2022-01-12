@@ -23,9 +23,19 @@ class OrderViewSet(BaseViewSet):
         "checkout": [permissions.IsAuthenticated],
         "create_order": [permissions.IsAuthenticated],
         "list_order": [permissions.IsAuthenticated],
-        "order_detail": [permissions.IsAuthenticated]
+        "order_detail": [permissions.IsAuthenticated],
+        "cancel_order": [permissions.IsAuthenticated]
     }
     pagination_class = PageNumberWithSizePagination
+
+    @action(methods=['get'], detail=True, url_path='cancel')
+    def cancel_order(self, request, pk, *args, **kwargs):
+        user = request.user
+        order = Order.objects.filter(pk=pk, account=user)
+        res = OrderService.cancel_order(order)
+        if res is not None:
+            return Response({"detail": res}, status=status.HTTP_200_OK)
+        return Response({"detail": 'Order is not exists'}, status=status.HTTP_404_NOT_FOUND)
 
     @action(methods=['get'], detail=True, url_path='detail')
     def order_detail(self, request, *args, **kwargs):

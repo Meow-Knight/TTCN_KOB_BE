@@ -2,10 +2,27 @@ from django.db import transaction
 from django.db.models import Sum
 
 from api_beer.models import Beer, Cart
+from api_order import constants
+from api_order.models import OrderStatus
 from api_order.serializers import CUOrderDetailSerializer, ProgressSerializer, RetrieveProgressSerializer
 
 
 class OrderService:
+
+    @classmethod
+    @transaction.atomic
+    def cancel_order(cls, order):
+        if order.exists():
+            order = order.first()
+            res = {"success": False, "id": order.id}
+            order_status = order.order_status.name
+            if constants.OrderStatus.PENDING.value.get('name') == order_status:
+                new_status = OrderStatus.objects.filter(name=constants.OrderStatus.CANCELING.value.get('name'))
+                if new_status.exists():
+                    order.order_status = new_status.first()
+                    order.save()
+                    res['success'] = True
+            return res
 
     @classmethod
     @transaction.atomic
