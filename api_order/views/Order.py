@@ -40,30 +40,33 @@ class OrderViewSet(BaseViewSet):
             return Response({"detail": res}, status=status.HTTP_200_OK)
         return Response({"detail": res}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(methods=['get'], detail=True, url_path="user_change_order_status")
-    def user_change_order_status(self, request, pk):
+    @action(methods=['put'], detail=False, url_path="user_change_order_status")
+    def user_change_order_status(self, request):
         user = request.user
+        pk = request.data.get("id")
         order = Order.objects.filter(pk=pk, account=user)
-        key_change = request.query_params.get("key_change")
+        key_change = request.data.get("key_change")
         if order.exists():
             res = OrderService.change_order_status(order.first(), key_change, user.role.name)
             if res is not None:
                 return Response({"detail": res}, status=status.HTTP_200_OK)
         return Response({"detail": "Order is not exists"}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(methods=['get'], detail=True, url_path="admin_change_order_status")
-    def ad_change_order_status(self, request, pk):
+    @action(methods=['put'], detail=False, url_path="admin_change_order_status")
+    def ad_change_order_status(self, request):
         user = request.user
+        pk = request.data["id"]
         order = Order.objects.filter(pk=pk)
-        key_change = request.query_params.get("key_change")
+        key_change = request.data.get("key_change")
         if order.exists():
             res = OrderService.change_order_status(order.first(), key_change, user.role.name)
             if res is not None:
                 return Response({"detail": res}, status=status.HTTP_200_OK)
         return Response({"detail": "Order is not exists"}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(methods=['get'], detail=True, url_path='admin_cancel_order')
-    def admin_cancel_order(self, request, pk):
+    @action(methods=['put'], detail=False, url_path='admin_cancel_order')
+    def admin_cancel_order(self, request):
+        pk = request.data.get("id")
         order = Order.objects.filter(pk=pk)
         res = OrderService.cancel_order(order)
         if res is not None:
@@ -83,9 +86,10 @@ class OrderViewSet(BaseViewSet):
         self.serializer_class = ListOrderAdminSerializer
         return super().list(request, *args, **kwargs)
 
-    @action(methods=['get'], detail=True, url_path='cancel')
-    def cancel_order(self, request, pk, *args, **kwargs):
+    @action(methods=['put'], detail=False, url_path='cancel')
+    def cancel_order(self, request, *args, **kwargs):
         user = request.user
+        pk = request.data.get("id")
         order = Order.objects.filter(pk=pk, account=user)
         res = OrderService.cancel_order(order)
         if res is not None:
