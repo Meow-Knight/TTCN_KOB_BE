@@ -1,6 +1,6 @@
 import datetime
 
-from rest_framework import serializers
+from rest_framework import serializers, fields
 
 from api_beer.models import Beer, BeerPhoto, BeerDiscount
 from api_beer.serializers import BeerPhotoSerializer
@@ -24,6 +24,27 @@ class DropdownBeerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beer
         fields = ('id', 'name',)
+
+
+class TopBeerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Beer
+        fields = ('id', 'total_sum', "name")
+
+    def build_unknown_field(self, field_name, model_class):
+        """
+        Return a two tuple of (cls, kwargs) to build a serializer field with. For fields that werent originally on
+        The model
+        """
+        return fields.CharField, {'read_only': True}
+
+    def to_representation(self, instance):
+        data = super(TopBeerSerializer, self).to_representation(instance)
+        beer_id = data['id']
+        photos = BeerPhoto.objects.filter(beer_id=beer_id)
+        if photos.exists():
+            data['photo'] = photos.first().link
+        return data
 
 
 class RetrieveBeerSerializer(serializers.ModelSerializer):
