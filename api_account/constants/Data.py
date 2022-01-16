@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class UserData:
     users = [
         {
@@ -127,3 +130,18 @@ class UserData:
             "age": 21
         },
     ]
+
+
+class RoleData(Enum):
+    CUSTOMER = {
+        "id": "aef45b7b6f9745428594caa9ed3ec5f8",
+        "name": "CUSTOMER"
+    }
+    STAFF = {
+        "id": "91a0e81fd2064dd182669d4dd592d209",
+        "name": "STAFF"
+    }
+    ADMIN = {
+        "id": "af63504a122c406f9fd9f3b7162b7591",
+        "name": "ADMIN"
+    }

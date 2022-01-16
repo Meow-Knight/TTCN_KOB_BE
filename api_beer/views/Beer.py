@@ -10,10 +10,11 @@ from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBee
     SearchItemBeerSerializer, DropdownBeerSerializer
 from api_beer.services import BeerService
 from api_beer.constants import SaleDurationEnum, SaleType
+from api_account.permissions import StaffOrAdminPermission, AdminPermission
 
 
 class BeerViewSet(BaseViewSet):
-    permission_classes = [IsAdminUser]
+    permission_classes = [StaffOrAdminPermission]
     serializer_class = BeerSerializer
     queryset = Beer.objects.all()
     serializer_map = {
@@ -28,8 +29,8 @@ class BeerViewSet(BaseViewSet):
         "info": [],
         "user_search": [],
         "get_all_with_name": [],
-        "top": [],
-        "chart_data": []
+        "top": [AdminPermission],
+        "chart_data": [AdminPermission],
     }
 
     def create(self, request, *args, **kwargs):

@@ -10,7 +10,7 @@ import requests
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api_account.models import Account, Role
-from api_account.constants import RoleConstants, GoogleLoginConstants
+from api_account.constants import GoogleLoginConstants, RoleData
 
 
 class LoginView(APIView):
@@ -69,7 +69,7 @@ class MyGoogleLogin(APIView):
             account.avatar = data.get("picture")
             account.username = data['email'].split('@')[0]
             account.password = make_password(BaseUserManager().make_random_password())
-            user_role = Role.objects.get(name=RoleConstants.USER)
+            user_role = Role.objects.get(id=RoleData.CUSTOMER.value.get('id'))
             account.role = user_role
             account.save()
         else:

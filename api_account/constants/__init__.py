@@ -1,3 +1,2 @@
-from .Role import RoleConstants
 from .GoogleLogin import GoogleLoginConstants
-from .Data import UserData
+from .Data import UserData, RoleData

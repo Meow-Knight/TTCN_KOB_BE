@@ -3,14 +3,14 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.hashers import make_password
 from django.db import migrations
 
-from api_account.constants import UserData
+from api_account.constants import UserData, RoleData
 
 
 def initial_user_data(apps, schema_editor):
     account_model = apps.get_model("api_account", "Account")
     role_model = apps.get_model("api_account", "Role")
 
-    user_role = role_model.objects.filter(name="USER").first()
+    user_role = role_model.objects.filter(id=RoleData.CUSTOMER.value.get('id')).first()
 
     accounts = []
     for user in UserData.users:
