@@ -3,7 +3,7 @@ from django.db.models import Sum
 
 from api_beer.models import Beer, Cart
 from api_order import constants
-from api_account.constants.Role import RoleConstants
+from api_account.constants.Data import RoleData
 from api_order.models import OrderStatus
 from api_order.serializers import CUOrderDetailSerializer, ProgressSerializer, RetrieveProgressSerializer
 
@@ -15,7 +15,7 @@ class OrderService:
     def auto_completed_order(cls, orders):
         if orders.exists():
             res = []
-            role = RoleConstants.USER
+            role = RoleData.CUSTOMER.value.get("name")
             key_change = constants.OrderStatus.COMPLETED.value.get("name")
             for order in orders:
                 res_item = cls.change_order_status(order, key_change, role)
@@ -34,28 +34,28 @@ class OrderService:
     @classmethod
     @transaction.atomic
     def my_switcher(cls, key_change, order_status, role):
-        if constants.OrderStatus.CONFIRMED.value.get("name") == key_change and role == RoleConstants.ADMIN:
+        if constants.OrderStatus.CONFIRMED.value.get("name") == key_change and role != RoleData.CUSTOMER.value.get("name"):
             if order_status == constants.OrderStatus.PENDING.value.get("name"):
                 new_status = OrderStatus.objects.filter(name=constants.OrderStatus.CONFIRMED.value.get("name"))
                 if new_status.exists():
                     return new_status.first()
-        elif constants.OrderStatus.DELIVERING.value.get("name") == key_change and role == RoleConstants.ADMIN:
+        elif constants.OrderStatus.DELIVERING.value.get("name") == key_change and role != RoleData.CUSTOMER.value.get("name"):
             if order_status == constants.OrderStatus.CONFIRMED.value.get("name") \
                     or order_status == constants.OrderStatus.NOTRECEIVED.value.get("name"):
                 new_status = OrderStatus.objects.filter(name=constants.OrderStatus.DELIVERING.value.get("name"))
                 if new_status.exists():
                     return new_status.first()
-        elif constants.OrderStatus.DELIVERED.value.get("name") == key_change and role == RoleConstants.ADMIN:
+        elif constants.OrderStatus.DELIVERED.value.get("name") == key_change and role != RoleData.CUSTOMER.value.get("name"):
             if order_status == constants.OrderStatus.DELIVERING.value.get("name"):
                 new_status = OrderStatus.objects.filter(name=constants.OrderStatus.DELIVERED.value.get("name"))
                 if new_status.exists():
                     return new_status.first()
-        elif constants.OrderStatus.COMPLETED.value.get("name") == key_change and role == RoleConstants.USER:
+        elif constants.OrderStatus.COMPLETED.value.get("name") == key_change and role == RoleData.CUSTOMER.value.get("name"):
             if order_status == constants.OrderStatus.DELIVERED.value.get("name"):
                 new_status = OrderStatus.objects.filter(name=constants.OrderStatus.COMPLETED.value.get("name"))
                 if new_status.exists():
                     return new_status.first()
-        elif constants.OrderStatus.NOTRECEIVED.value.get("name") == key_change and role == RoleConstants.USER:
+        elif constants.OrderStatus.NOTRECEIVED.value.get("name") == key_change and role == RoleData.CUSTOMER.value.get("name"):
             if order_status == constants.OrderStatus.DELIVERED.value.get("name"):
                 new_status = OrderStatus.objects.filter(name=constants.OrderStatus.NOTRECEIVED.value.get("name"))
                 if new_status.exists():

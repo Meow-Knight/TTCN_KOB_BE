@@ -9,10 +9,12 @@ from api_beer.models import Beer, BeerPhoto
 from api_beer.serializers import BeerSerializer, ListBeerSerializer, RetrieveBeerSerializer, ItemBeerSerializer, \
     SearchItemBeerSerializer, DropdownBeerSerializer
 from api_beer.services import BeerService
+from api_beer.constants import SaleDurationEnum, SaleType
+from api_account.permissions import StaffOrAdminPermission, AdminPermission
 
 
 class BeerViewSet(BaseViewSet):
-    permission_classes = [IsAdminUser]
+    permission_classes = [StaffOrAdminPermission]
     serializer_class = BeerSerializer
     queryset = Beer.objects.all()
     serializer_map = {
@@ -26,7 +28,9 @@ class BeerViewSet(BaseViewSet):
         "homepage": [],
         "info": [],
         "user_search": [],
-        "get_all_with_name": []
+        "get_all_with_name": [],
+        "top": [AdminPermission],
+        "chart_data": [AdminPermission],
     }
 
     def create(self, request, *args, **kwargs):
@@ -89,3 +93,30 @@ class BeerViewSet(BaseViewSet):
     @action(detail=False, methods=['get'])
     def get_all_with_name(self, request, *args, **kwargs):
         return Response(DropdownBeerSerializer(self.get_queryset(), many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def top(self, request, *args, **kwargs):
+        amount = request.query_params.get("amount")
+        duration = request.query_params.get("duration")
+        type = request.query_params.get("type")
+        enum_type = SaleType.get_by_value(type)
+        if not enum_type:
+            enum_type = SaleType.AMOUNT
+        enum_duration = SaleDurationEnum.get_by_value(duration)
+        try:
+            amount = int(amount)
+        except Exception:
+            amount = 5
+
+        return Response(BeerService.get_top_beers(amount, enum_duration, enum_type), status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def chart_data(self, request, *args, **kwargs):
+        duration = request.query_params.get("duration")
+        type = request.query_params.get("type")
+        enum_duration = SaleDurationEnum.get_by_value(duration)
+        enum_type = SaleType.get_by_value(type)
+        if not enum_type:
+            enum_type = SaleType.AMOUNT
+
+        return Response(BeerService.get_chart_data(enum_duration, enum_type), status=status.HTTP_200_OK)

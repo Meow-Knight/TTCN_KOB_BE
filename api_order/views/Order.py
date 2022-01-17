@@ -1,9 +1,10 @@
 from datetime import date, timedelta
 
-from rest_framework import status, permissions
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from api_account.permissions import StaffOrAdminPermission, CustomerPermission
 from api_account.serializers import GeneralInfoAccountSerializer
 from api_base.pagination import PageNumberWithSizePagination
 from api_base.views import BaseViewSet
@@ -18,14 +19,14 @@ from api_order import constants
 class OrderViewSet(BaseViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAdminUser, ]
+    permission_classes = [StaffOrAdminPermission]
     permission_map = {
-        "checkout": [permissions.IsAuthenticated],
-        "create_order": [permissions.IsAuthenticated],
-        "list_order": [permissions.IsAuthenticated],
-        "order_detail": [permissions.IsAuthenticated],
-        "cancel_order": [permissions.IsAuthenticated],
-        "user_change_order_status": [permissions.IsAuthenticated]
+        "checkout": [CustomerPermission],
+        "create_order": [CustomerPermission],
+        "list_order": [CustomerPermission],
+        "order_detail": [CustomerPermission],
+        "cancel_order": [CustomerPermission],
+        "user_change_order_status": [CustomerPermission]
     }
     pagination_class = PageNumberWithSizePagination
 
