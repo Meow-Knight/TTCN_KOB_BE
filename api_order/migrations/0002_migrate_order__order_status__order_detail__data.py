@@ -19,20 +19,24 @@ def initial_data(apps, schema_editor):
     order_statuses = map(lambda status: order_status_model(id=status.value.get("id"), name=status.value.get("name")),
                          OrderStatus)
     order_status_model.objects.bulk_create(order_statuses)
-    done_status = order_status_model.objects.get(name=OrderStatus.DONE.value.get("name"))
+    completed_status = order_status_model.objects.get(name=OrderStatus.COMPLETED.value.get("name"))
     pending_status = order_status_model.objects.get(name=OrderStatus.PENDING.value.get("name"))
-    shipping_status = order_status_model.objects.get(name=OrderStatus.SHIPPING.value.get("name"))
+    delivering_status = order_status_model.objects.get(name=OrderStatus.DELIVERING.value.get("name"))
+    delivered_status = order_status_model.objects.get(name=OrderStatus.DELIVERED.value.get("name"))
+    confirmed_status = order_status_model.objects.get(name=OrderStatus.CONFIRMED.value.get("name"))
+    canceled_status = order_status_model.objects.get(name=OrderStatus.CANCELED.value.get("name"))
+    notreceivered_status = order_status_model.objects.get(name=OrderStatus.NOTRECEIVED.value.get("name"))
 
     accounts = account_model.objects.all()[1:]
     beers = beer_model.objects.all()
     order_1 = order_model(created_at=date_time_now - timedelta(days=24),
                           updated_at=date_time_now - timedelta(days=24),
-                          done_at=date_time_now - timedelta(days=24),
+                          done_at=date_time_now - timedelta(days=19),
                           total_price=1000000,
                           total_discount=90000,
                           shipping_address="Tổ 10, thôn Nhị Dinh 3, Điện Phước, Điện Bàn, Quảng Nam",
                           shipping_phone="0909079675",
-                          order_status=done_status,
+                          order_status=completed_status,
                           account=accounts[0])
     order_1.save()
 
@@ -44,14 +48,15 @@ def initial_data(apps, schema_editor):
 
     order_2 = order_model(created_at=date_time_now - timedelta(days=20),
                           updated_at=date_time_now - timedelta(days=19),
-                          done_at=date_time_now - timedelta(days=19),
+                          done_at=date_time_now - timedelta(days=16),
                           total_price=500000,
                           total_discount=9000,
                           shipping_address="Số 388 Đ. Trần Hưng Đạo, An Hải Tây, Sơn Trà, Đà Nẵng",
                           shipping_phone="089567734",
-                          order_status=done_status,
+                          order_status=completed_status,
                           account=accounts[1])
     order_2.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[3], order=order_2),
         order_detail_model(amount=1, beer=beers[2], order=order_2)
@@ -59,14 +64,15 @@ def initial_data(apps, schema_editor):
 
     order_3 = order_model(created_at=date_time_now - timedelta(days=35),
                           updated_at=date_time_now - timedelta(days=34),
-                          done_at=date_time_now - timedelta(days=34),
+                          done_at=date_time_now - timedelta(days=28),
                           total_price=2000000,
                           total_discount=100000,
                           shipping_address="Hoa Hồng 4, An Hải Tây, Sơn Trà, Đà Nẵng",
                           shipping_phone="07857365",
-                          order_status=done_status,
+                          order_status=completed_status,
                           account=accounts[2])
     order_3.save()
+
     order_details.extend([
         order_detail_model(amount=4, beer=beers[4], order=order_3),
         order_detail_model(amount=2, beer=beers[5], order=order_3),
@@ -76,14 +82,14 @@ def initial_data(apps, schema_editor):
 
     order_4 = order_model(created_at=date_time_now - timedelta(days=2),
                           updated_at=date_time_now - timedelta(days=2),
-                          done_at=date_time_now - timedelta(days=2),
                           total_price=1000000,
                           total_discount=100000,
                           shipping_address="Hoa Hồng 4, An Hải Tây, Sơn Trà, Đà Nẵng",
                           shipping_phone="078579365",
-                          order_status=done_status,
+                          order_status=canceled_status,
                           account=accounts[3])
     order_4.save()
+
     order_details.extend([
         order_detail_model(amount=2, beer=beers[7], order=order_4),
         order_detail_model(amount=1, beer=beers[8], order=order_4)
@@ -91,7 +97,6 @@ def initial_data(apps, schema_editor):
 
     order_5 = order_model(created_at=date_time_now - timedelta(days=5),
                           updated_at=date_time_now - timedelta(days=5),
-                          done_at=date_time_now - timedelta(days=5),
                           total_price=500000,
                           total_discount=50000,
                           shipping_address="Hoa Hồng 4, An Hải Tây, Sơn Trà, Đà Nẵng",
@@ -99,6 +104,7 @@ def initial_data(apps, schema_editor):
                           order_status=pending_status,
                           account=accounts[3])
     order_5.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[1], order=order_5),
         order_detail_model(amount=1, beer=beers[2], order=order_5)
@@ -106,7 +112,6 @@ def initial_data(apps, schema_editor):
 
     order_6 = order_model(created_at=date_time_now - timedelta(days=1),
                           updated_at=date_time_now - timedelta(days=1),
-                          done_at=date_time_now - timedelta(days=1),
                           total_price=3000000,
                           total_discount=120000,
                           shipping_address="Hoa Hồng 4, An Hải Tây, Sơn Trà, Đà Nẵng",
@@ -114,6 +119,7 @@ def initial_data(apps, schema_editor):
                           order_status=pending_status,
                           account=accounts[4])
     order_6.save()
+
     order_details.extend([
         order_detail_model(amount=3, beer=beers[5], order=order_6),
         order_detail_model(amount=2, beer=beers[8], order=order_6),
@@ -123,14 +129,15 @@ def initial_data(apps, schema_editor):
 
     order_7 = order_model(created_at=date_time_now - timedelta(days=6),
                           updated_at=date_time_now - timedelta(days=6),
-                          done_at=date_time_now - timedelta(days=6),
+                          done_at=date_time_now - timedelta(days=1),
                           total_price=300000,
                           total_discount=12000,
                           shipping_address="Hoa Hồng 4, An Hải Tây, Sơn Trà, Đà Nẵng",
                           shipping_phone="078579365",
-                          order_status=done_status,
+                          order_status=completed_status,
                           account=accounts[5])
     order_7.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[3], order=order_7)
     ])
@@ -144,6 +151,7 @@ def initial_data(apps, schema_editor):
                           order_status=pending_status,
                           account=accounts[1])
     order_8.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[8], order=order_8)
     ])
@@ -154,9 +162,10 @@ def initial_data(apps, schema_editor):
                           total_discount=10000,
                           shipping_address="51 P. Đức Chính, Mân Thái, Sơn Trà, Đà Nẵng",
                           shipping_phone="078579365",
-                          order_status=shipping_status,
+                          order_status=delivering_status,
                           account=accounts[3])
     order_9.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[5], order=order_9)
     ])
@@ -167,9 +176,10 @@ def initial_data(apps, schema_editor):
                            total_discount=50000,
                            shipping_address="139/59/38, 10 Trần Quang Khải, Thọ Quang, Sơn Trà, Đà Nẵng",
                            shipping_phone="078579365",
-                           order_status=shipping_status,
+                           order_status=pending_status,
                            account=accounts[9])
     order_10.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[10], order=order_10),
         order_detail_model(amount=1, beer=beers[11], order=order_10)
@@ -177,14 +187,15 @@ def initial_data(apps, schema_editor):
 
     order_11 = order_model(created_at=date_time_now - timedelta(days=20),
                            updated_at=date_time_now - timedelta(days=20),
-                           done_at=date_time_now - timedelta(days=20),
+                           done_at=date_time_now - timedelta(days=16),
                            total_price=700000,
                            total_discount=50000,
                            shipping_address="361 Khúc Hạo, Nại Hiên Đông, Sơn Trà, Đà Nẵng",
                            shipping_phone="078579365",
-                           order_status=done_status,
+                           order_status=completed_status,
                            account=accounts[10])
     order_11.save()
+
     order_details.extend([
         order_detail_model(amount=2, beer=beers[9], order=order_11),
         order_detail_model(amount=1, beer=beers[8], order=order_11)
@@ -192,14 +203,14 @@ def initial_data(apps, schema_editor):
 
     order_12 = order_model(created_at=date_time_now - timedelta(days=3),
                            updated_at=date_time_now - timedelta(days=3),
-                           done_at=date_time_now - timedelta(days=3),
                            total_price=1200000,
                            total_discount=30000,
                            shipping_address="20-22 Nguyễn Thuật, Hoà An, Cẩm Lệ, Đà Nẵng",
                            shipping_phone="078579365",
-                           order_status=done_status,
+                           order_status=confirmed_status,
                            account=accounts[0])
     order_12.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[0], order=order_12),
         order_detail_model(amount=1, beer=beers[1], order=order_12),
@@ -213,37 +224,39 @@ def initial_data(apps, schema_editor):
                            total_discount=10000,
                            shipping_address="04 Tú Quỳ, Hoà Minh, Liên Chiểu, Đà Nẵng",
                            shipping_phone="078579365",
-                           order_status=shipping_status,
+                           order_status=delivering_status,
                            account=accounts[2])
     order_13.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[7], order=order_13)
     ])
 
     order_14 = order_model(created_at=date_time_now - timedelta(days=56),
                            updated_at=date_time_now - timedelta(days=56),
-                           done_at=date_time_now - timedelta(days=56),
+                           done_at=date_time_now - timedelta(days=49),
                            total_price=300000,
                            total_discount=0,
                            shipping_address="221 Tô Hiệu, Hoà Minh, Hải Châu, Đà Nẵng",
                            shipping_phone="078579365",
-                           order_status=done_status,
+                           order_status=completed_status,
                            account=accounts[5])
     order_14.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[4], order=order_14)
     ])
 
     order_15 = order_model(created_at=date_time_now - timedelta(days=3),
                            updated_at=date_time_now - timedelta(days=3),
-                           done_at=date_time_now - timedelta(days=3),
                            total_price=3000000,
                            total_discount=150000,
                            shipping_address="54 Nguyễn Đình Tứ, Hoà An, Cẩm Lệ, Đà Nẵng",
                            shipping_phone="078579365",
-                           order_status=done_status,
+                           order_status=pending_status,
                            account=accounts[10])
     order_15.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[14], order=order_15),
         order_detail_model(amount=3, beer=beers[15], order=order_15),
@@ -260,6 +273,7 @@ def initial_data(apps, schema_editor):
                            order_status=pending_status,
                            account=accounts[11])
     order_16.save()
+
     order_details.extend([
         order_detail_model(amount=1, beer=beers[14], order=order_16),
         order_detail_model(amount=2, beer=beers[15], order=order_16),

@@ -1,36 +1,96 @@
-from datetime import date
+from datetime import date, timedelta
 
-from rest_framework import status, permissions
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from api_account.permissions import StaffOrAdminPermission, CustomerPermission
 from api_account.serializers import GeneralInfoAccountSerializer
 from api_base.pagination import PageNumberWithSizePagination
 from api_base.views import BaseViewSet
 from api_beer.models import Cart, Beer, Discount
 from api_beer.serializers import BeerDetailCartSerializer
 from api_order.models import Order, OrderStatus
-from api_order.serializers import OrderSerializer, CUOrderSerializer, RetrieveOrderSerializer
-from api_order.serializers.Order import ListOrderSerializer
+from api_order.serializers import OrderSerializer, CUOrderSerializer, RetrieveOrderSerializer, ListOrderSerializer, ListOrderAdminSerializer
 from api_order.services import OrderService
+from api_order import constants
 
 
 class OrderViewSet(BaseViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAdminUser, ]
+    permission_classes = [StaffOrAdminPermission]
     permission_map = {
-        "checkout": [permissions.IsAuthenticated],
-        "create_order": [permissions.IsAuthenticated],
-        "list_order": [permissions.IsAuthenticated],
-        "order_detail": [permissions.IsAuthenticated],
-        "cancel_order": [permissions.IsAuthenticated]
+        "checkout": [CustomerPermission],
+        "create_order": [CustomerPermission],
+        "list_order": [CustomerPermission],
+        "order_detail": [CustomerPermission],
+        "cancel_order": [CustomerPermission],
+        "user_change_order_status": [CustomerPermission]
     }
     pagination_class = PageNumberWithSizePagination
 
-    @action(methods=['get'], detail=True, url_path='cancel')
-    def cancel_order(self, request, pk, *args, **kwargs):
+    @action(methods=['get'], detail=False, url_path="check_expired_order")
+    def check_expired_order(self, request):
+        delivered_status = constants.OrderStatus.DELIVERED.value.get("name")
+        orders = Order.objects.filter(order_status__name=delivered_status,
+                                      progress__order_status__name=delivered_status,
+                                      progress__created_at__lt=date.today() - timedelta(days=3))
+        res = OrderService.auto_completed_order(orders)
+        if res is not None:
+            return Response({"detail": res}, status=status.HTTP_200_OK)
+        return Response({"detail": res}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['put'], detail=False, url_path="user_change_order_status")
+    def user_change_order_status(self, request):
         user = request.user
+        pk = request.data.get("id")
+        order = Order.objects.filter(pk=pk, account=user)
+        key_change = request.data.get("key_change")
+        if order.exists():
+            res = OrderService.change_order_status(order.first(), key_change, user.role.name)
+            if res is not None:
+                return Response({"detail": res}, status=status.HTTP_200_OK)
+        return Response({"detail": "Order is not exists"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['put'], detail=False, url_path="admin_change_order_status")
+    def ad_change_order_status(self, request):
+        user = request.user
+        pk = request.data["id"]
+        order = Order.objects.filter(pk=pk)
+        key_change = request.data.get("key_change")
+        if order.exists():
+            res = OrderService.change_order_status(order.first(), key_change, user.role.name)
+            if res is not None:
+                return Response({"detail": res}, status=status.HTTP_200_OK)
+        return Response({"detail": "Order is not exists"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['put'], detail=False, url_path='admin_cancel_order')
+    def admin_cancel_order(self, request):
+        pk = request.data.get("id")
+        order = Order.objects.filter(pk=pk)
+        res = OrderService.cancel_order(order)
+        if res is not None:
+            return Response({"detail": res}, status=status.HTTP_200_OK)
+        return Response({"detail": 'Order is not exists'}, status=status.HTTP_404_NOT_FOUND)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = Order.objects.filter(pk=kwargs.get('pk'))
+        self.serializer_class = RetrieveOrderSerializer
+        return super().retrieve(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        query_set = Order.objects
+        search_query = request.query_params.get("q", "")
+        query_set = query_set.filter(order_status__name__icontains=search_query)
+        self.queryset = query_set
+        self.serializer_class = ListOrderAdminSerializer
+        return super().list(request, *args, **kwargs)
+
+    @action(methods=['put'], detail=False, url_path='cancel')
+    def cancel_order(self, request, *args, **kwargs):
+        user = request.user
+        pk = request.data.get("id")
         order = Order.objects.filter(pk=pk, account=user)
         res = OrderService.cancel_order(order)
         if res is not None:

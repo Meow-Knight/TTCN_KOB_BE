@@ -6,19 +6,27 @@ class OrderStatus(Enum):
         "id": 1,
         "name": "PENDING",
     }
-    ACCEPTED = {
+    CONFIRMED = {
         "id": 2,
-        "name": "ACCEPTED",
+        "name": "CONFIRMED",
     }
-    SHIPPING = {
+    DELIVERING = {
         "id": 3,
-        "name": "SHIPPING",
+        "name": "DELIVERING",
     }
-    DONE = {
+    DELIVERED = {
         "id": 4,
-        "name": "DONE",
+        "name": "DELIVERED",
     }
-    CANCELING = {
+    CANCELED = {
         "id": 5,
-        "name": "CANCELING",
+        "name": "CANCELED",
+    }
+    COMPLETED = {
+        "id": 6,
+        "name": "COMPLETED"
+    }
+    NOTRECEIVED = {
+        "id": 7,
+        "name": "NOTRECEIVED"
     }
