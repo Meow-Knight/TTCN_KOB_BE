@@ -25,7 +25,6 @@ class SimpleAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ('id', 'first_name', 'last_name', 'avatar')
-        fields = ('username', 'email','address', 'phone', 'age', 'first_name', 'last_name')
 
 
 class AccountInforOrderDetailSerializer(serializers.ModelSerializer):
