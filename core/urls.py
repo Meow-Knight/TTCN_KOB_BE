@@ -48,7 +48,7 @@ urlpatterns = [
     url(r"api/v1/admin/", include('api_admin.urls')),
     url(r"api/v1/beer/", include('api_beer.urls')),
     url(r"api/v1/order/", include('api_order.urls')),
-    url('admin_login', LoginView.as_view(), name='admin_login'),
-    url('login', MyGoogleLogin.as_view(), name='login'),
+    url('api/v1/login', LoginView.as_view(), name='admin_login'),
+    url('api/v1/google_login', MyGoogleLogin.as_view(), name='login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
