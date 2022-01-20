@@ -30,10 +30,10 @@ class ReviewViewSet(BaseViewSet):
             beer = serializer.validated_data.get('beer')
             if ReviewService.can_create_review(request.user, beer):
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return Response({"detail": "You cannot create review on this beer. You have to buy it before"},
-                                status=status.HTTP_201_CREATED)
+                                status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         review = self.get_object()
