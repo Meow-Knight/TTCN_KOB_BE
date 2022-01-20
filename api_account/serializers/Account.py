@@ -7,10 +7,11 @@ from api_base.serializers import ReadOnlyModelSerializer
 
 
 class AccountInfoSerializer(ReadOnlyModelSerializer):
+    role = serializers.CharField(source='role.name')
 
     class Meta:
         model = Account
-        fields = ('first_name', 'last_name', 'username', 'email', 'is_staff', 'is_superuser', 'phone', 'age', 'address', 'avatar')
+        fields = ('first_name', 'last_name', 'username', 'email', 'is_staff', 'is_superuser', 'phone', 'age', 'address', 'avatar', 'role')
 
 
 class GeneralInfoAccountSerializer(serializers.ModelSerializer):
