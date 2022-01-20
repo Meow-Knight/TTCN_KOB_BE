@@ -10,3 +10,4 @@ class Progress(TimeStampedModel):
 
     class Meta:
         db_table = "progress"
+        ordering = ('created_at',)
