@@ -83,6 +83,17 @@ class OrderViewSet(BaseViewSet):
         query_set = Order.objects
         search_query = request.query_params.get("q", "")
         query_set = query_set.filter(order_status__name__icontains=search_query)
+        sort_query = request.query_params.get("sort")
+        if sort_query:
+            try:
+                if sort_query.startswith("-"):
+                    Order._meta.get_field(sort_query[1:])
+                else:
+                    Order._meta.get_field(sort_query)
+                query_set = query_set.order_by(sort_query)
+            except:
+                pass
+
         self.queryset = query_set
         self.serializer_class = ListOrderAdminSerializer
         return super().list(request, *args, **kwargs)
@@ -111,6 +122,17 @@ class OrderViewSet(BaseViewSet):
         user = request.user
         search_query = request.query_params.get("q", "")
         orders = user.order.all().filter(order_status__name__icontains=search_query)
+        sort_query = request.query_params.get("sort")
+        if sort_query:
+            try:
+                if sort_query.startswith("-"):
+                    Order._meta.get_field(sort_query[1:])
+                else:
+                    Order._meta.get_field(sort_query)
+                orders = orders.order_by(sort_query)
+            except:
+                pass
+
         page = self.paginate_queryset(orders)
         if page is not None:
             res = ListOrderSerializer(page, many=True)
