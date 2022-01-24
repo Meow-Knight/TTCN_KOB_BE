@@ -1,10 +1,7 @@
-import api_beer.constants.Data
 import random
 from datetime import datetime, timedelta
 
 from django.db import migrations
-
-import api_order.constants
 
 
 def initial_data(apps, schema_editor):
@@ -12,10 +9,8 @@ def initial_data(apps, schema_editor):
     staff_model = apps.get_model("api_account", "Account")
     change_order_by_model = apps.get_model("api_order", "ChangeOrderBy")
 
-    cancel_status = api_order.constants.OrderStatus.CANCELED
-
     staffs = staff_model.objects.filter(is_staff=1)
-    progresses = progress_model.objects.all().exclude(order_status__name=cancel_status.value.get("name"))
+    progresses = progress_model.objects.all()
 
     change_order_by = []
 
