@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -5,8 +6,10 @@ from rest_framework.response import Response
 
 from api_account.models import Account
 from api_account.permissions import StaffOrAdminPermission
-from api_account.serializers import AccountInfoSerializer, GeneralInfoAccountSerializer, LoginAccountSerializer
+from api_account.serializers import AccountInfoSerializer, GeneralInfoAccountSerializer, LoginAccountSerializer, \
+    ListAccountSerializer
 from api_account.services import AccountService
+from api_account.constants import RoleData
 from api_base.views import BaseViewSet
 
 
@@ -16,10 +19,14 @@ class AccountViewSet(BaseViewSet):
     queryset = Account.objects.all()
     serializer_map = {
         "detail": GeneralInfoAccountSerializer,
-        "change_password": LoginAccountSerializer
+        "change_password": LoginAccountSerializer,
+        "list": ListAccountSerializer,
+        "customers": ListAccountSerializer
     }
     permission_map = {
-        "change_password": [StaffOrAdminPermission]
+        "change_password": [StaffOrAdminPermission],
+        "customers": [],
+        "partial_update": []
     }
 
     @action(detail=False, methods=['get'])
@@ -47,3 +54,8 @@ class AccountViewSet(BaseViewSet):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def customers(self, request, *args, **kwargs):
+        self.queryset = Account.objects.filter(role_id=RoleData.CUSTOMER.value.get('id'))
+        return super().list(request, *args, **kwargs)
