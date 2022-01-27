@@ -30,3 +30,14 @@ class OrderStatus(Enum):
         "id": 7,
         "name": "NOTRECEIVED"
     }
+
+
+class PaymentMethod(Enum):
+    DIRECT = {
+        "id": 1,
+        "name": "DIRECT"
+    }
+    PAYPAL = {
+        "id": 2,
+        "name": "PAYPAL"
+    }
