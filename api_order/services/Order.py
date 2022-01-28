@@ -4,29 +4,31 @@ from django.db.models import Sum
 from api_beer.models import Beer, Cart
 from api_order import constants
 from api_account.constants.Data import RoleData
-from api_order.models import OrderStatus
+from api_order.constants import Data
+from api_order.models import OrderStatus, PaymentMethod
 from api_order.serializers import CUOrderDetailSerializer, ProgressSerializer, RetrieveProgressSerializer
+from api_order.serializers.Payment import PaymentSerializer
 
 
 class OrderService:
 
     @classmethod
     @transaction.atomic
-    def auto_completed_order(cls, orders):
+    def auto_completed_order(cls, orders, request):
         if orders.exists():
             res = []
             role = RoleData.CUSTOMER.value.get("name")
             key_change = constants.OrderStatus.COMPLETED.value.get("name")
             for order in orders:
-                res_item = cls.change_order_status(order, key_change, role)
+                res_item = cls.change_order_status(order, key_change, role, request)
                 if res_item is not None:
                     res.append(res_item)
             return res
 
     @classmethod
     @transaction.atomic
-    def add_progress_order(cls, order, order_status):
-        progress = {"order_status": order_status.id, "order": order.id}
+    def add_progress_order(cls, order, order_status, request):
+        progress = {"order_status": order_status.id, "order": order.id, "account": request.user.id}
         progress = ProgressSerializer(data=progress)
         if progress.is_valid(raise_exception=True):
             progress.save()
@@ -63,20 +65,20 @@ class OrderService:
 
     @classmethod
     @transaction.atomic
-    def change_order_status(cls, order, key_change, role):
+    def change_order_status(cls, order, key_change, role, request):
         res = {"success": False, "id": order.id}
         order_status = order.order_status.name
         new_status = cls.my_switcher(key_change, order_status, role)
         if new_status is not None:
             order.order_status = new_status
             order.save()
-            cls.add_progress_order(order, new_status)
+            cls.add_progress_order(order, new_status, request)
             res['success'] = True
         return res
 
     @classmethod
     @transaction.atomic
-    def cancel_order(cls, order):
+    def cancel_order(cls, order, request):
         if order.exists():
             order = order.first()
             res = {"success": False, "id": order.id}
@@ -86,7 +88,7 @@ class OrderService:
                 if new_status.exists():
                     order.order_status = new_status.first()
                     order.save()
-                    cls.add_progress_order(order, new_status.first())
+                    cls.add_progress_order(order, new_status.first(), request)
                     res['success'] = True
             return res
 
@@ -122,14 +124,38 @@ class OrderService:
 
     @classmethod
     @transaction.atomic
+    def create_payment(cls, order, request):
+        payment_method = PaymentMethod.objects.filter(name=request.data.get('payment_method').upper())
+        if payment_method.exists():
+            payment_method = payment_method.first()
+            payment = {"order": order.id, "payment_method": payment_method.id}
+            if payment_method.name == Data.PaymentMethod.PAYPAL.value.get("name"):
+                if request.data.get("id_paypal") is not None and request.data.get('email_paypal') is not None:
+                    payment['id_paypal'] = request.data['id_paypal']
+                    payment['email_paypal'] = request.data['email_paypal']
+                else:
+                    raise ValueError("Invalid Values")
+
+            payment = PaymentSerializer(data=payment)
+            if payment.is_valid(raise_exception=True):
+                payment = payment.save()
+                return payment
+        raise ValueError("Invalid Values")
+
+    @classmethod
+    @transaction.atomic
     def create_order_and_order_detail(cls, ser, carts, request, order_status):
         order = ser.save()
         res = ser.data
-        progress = {"order_status": order_status.id, "order": order.id}
+        progress = {"order_status": order_status.id, "order": order.id, "account": request.user.id}
         progress = ProgressSerializer(data=progress)
         if progress.is_valid(raise_exception=True):
             progress = progress.save()
             res['progress'] = RetrieveProgressSerializer(progress).data
+
+        res_payment = cls.create_payment(order, request)
+        if res_payment is not None:
+            res['payment_method'] = res_payment.payment_method.name
 
         for cart in carts:
             cart['order'] = order.id

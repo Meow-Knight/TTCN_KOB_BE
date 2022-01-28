@@ -36,7 +36,7 @@ class OrderViewSet(BaseViewSet):
         orders = Order.objects.filter(order_status__name=delivered_status,
                                       progress__order_status__name=delivered_status,
                                       progress__created_at__lt=date.today() - timedelta(days=3))
-        res = OrderService.auto_completed_order(orders)
+        res = OrderService.auto_completed_order(orders, request)
         if res is not None:
             return Response({"detail": res}, status=status.HTTP_200_OK)
         return Response({"detail": res}, status=status.HTTP_404_NOT_FOUND)
@@ -48,7 +48,7 @@ class OrderViewSet(BaseViewSet):
         order = Order.objects.filter(pk=pk, account=user)
         key_change = request.data.get("key_change")
         if order.exists():
-            res = OrderService.change_order_status(order.first(), key_change, user.role.name)
+            res = OrderService.change_order_status(order.first(), key_change, user.role.name, request)
             if res is not None:
                 return Response({"detail": res}, status=status.HTTP_200_OK)
         return Response({"detail": "Order is not exists"}, status=status.HTTP_404_NOT_FOUND)
@@ -60,7 +60,7 @@ class OrderViewSet(BaseViewSet):
         order = Order.objects.filter(pk=pk)
         key_change = request.data.get("key_change")
         if order.exists():
-            res = OrderService.change_order_status(order.first(), key_change, user.role.name)
+            res = OrderService.change_order_status(order.first(), key_change, user.role.name, request)
             if res is not None:
                 return Response({"detail": res}, status=status.HTTP_200_OK)
         return Response({"detail": "Order is not exists"}, status=status.HTTP_404_NOT_FOUND)
@@ -69,7 +69,7 @@ class OrderViewSet(BaseViewSet):
     def admin_cancel_order(self, request):
         pk = request.data.get("id")
         order = Order.objects.filter(pk=pk)
-        res = OrderService.cancel_order(order)
+        res = OrderService.cancel_order(order, request)
         if res is not None:
             return Response({"detail": res}, status=status.HTTP_200_OK)
         return Response({"detail": 'Order is not exists'}, status=status.HTTP_404_NOT_FOUND)
@@ -103,7 +103,7 @@ class OrderViewSet(BaseViewSet):
         user = request.user
         pk = request.data.get("id")
         order = Order.objects.filter(pk=pk, account=user)
-        res = OrderService.cancel_order(order)
+        res = OrderService.cancel_order(order, request)
         if res is not None:
             return Response({"detail": res}, status=status.HTTP_200_OK)
         return Response({"detail": 'Order is not exists'}, status=status.HTTP_404_NOT_FOUND)
