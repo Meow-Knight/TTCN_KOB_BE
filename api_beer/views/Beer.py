@@ -119,4 +119,6 @@ class BeerViewSet(BaseViewSet):
         if not enum_type:
             enum_type = SaleType.AMOUNT
 
-        return Response(BeerService.get_chart_data(enum_duration, enum_type), status=status.HTTP_200_OK)
+        chart_data = BeerService.get_chart_data(enum_duration, enum_type)
+        response = BeerService.format_chart_data(chart_data, enum_duration)
+        return Response(response, status=status.HTTP_200_OK)

@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api_account.models import Account
-from api_account.permissions import StaffOrAdminPermission
+from api_account.permissions import StaffOrAdminPermission, AdminPermission
 from api_account.serializers import AccountInfoSerializer, GeneralInfoAccountSerializer, LoginAccountSerializer, \
     ListAccountSerializer
 from api_account.services import AccountService
@@ -21,12 +21,14 @@ class AccountViewSet(BaseViewSet):
         "detail": GeneralInfoAccountSerializer,
         "change_password": LoginAccountSerializer,
         "list": ListAccountSerializer,
-        "customers": ListAccountSerializer
+        "customers": ListAccountSerializer,
+        "staffs": ListAccountSerializer
     }
     permission_map = {
         "change_password": [StaffOrAdminPermission],
-        "customers": [],
-        "partial_update": []
+        "customers": [AdminPermission],
+        "partial_update": [],
+        "staffs": [AdminPermission]
     }
 
     @action(detail=False, methods=['get'])
@@ -58,4 +60,9 @@ class AccountViewSet(BaseViewSet):
     @action(detail=False, methods=['get'])
     def customers(self, request, *args, **kwargs):
         self.queryset = Account.objects.filter(role_id=RoleData.CUSTOMER.value.get('id'))
+        return super().list(request, *args, **kwargs)
+
+    @action(detail=False, methods=['get'])
+    def staffs(self, request, *args, **kwargs):
+        self.queryset = Account.objects.filter(role_id=RoleData.STAFF.value.get('id'))
         return super().list(request, *args, **kwargs)

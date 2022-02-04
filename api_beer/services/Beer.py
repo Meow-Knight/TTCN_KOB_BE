@@ -1,5 +1,6 @@
 import datetime
 import random
+from dateutil.rrule import rrule, MONTHLY, DAILY
 
 from django.db import transaction, connection
 
@@ -51,14 +52,18 @@ class BeerService:
         return data
 
     @classmethod
-    def get_string_duration(cls, enum_duration):
+    def get_start_date(cls, enum_duration):
         switcher = {
             SaleDurationEnum.DAY: lambda: datetime.datetime.now() - datetime.timedelta(hours=24),
             SaleDurationEnum.WEEK: lambda: datetime.datetime.now() - datetime.timedelta(days=7),
             SaleDurationEnum.MONTH: lambda: datetime.datetime.now() - datetime.timedelta(days=30),
             SaleDurationEnum.YEAR: lambda: datetime.datetime.now() - datetime.timedelta(days=365)
         }
-        date_point = switcher.get(enum_duration)
+        return switcher.get(enum_duration)
+
+    @classmethod
+    def get_string_duration(cls, enum_duration):
+        date_point = cls.get_start_date(enum_duration)
         if not date_point:
             return None
         date_string = date_point().strftime("%Y-%m-%d")
@@ -96,3 +101,27 @@ class BeerService:
         for row in cursor.fetchall():
             results.append(dict(zip(columns, row)))
         return results
+
+    @classmethod
+    def format_chart_data(cls, chart_data, enum_duration):
+        start_date = cls.get_start_date(enum_duration)
+        if not start_date:
+            return None
+        start_date = start_date()
+
+        if enum_duration == SaleDurationEnum.YEAR:
+            month_arr = {}
+            for dt in rrule(MONTHLY, dtstart=start_date, until=datetime.datetime.now()):
+                month_arr[dt.strftime("%Y-%m")] = 0
+            for chart_record in chart_data:
+                done_at = chart_record.get('done_at').strftime("%Y-%m")
+                month_arr[done_at] += chart_record.get('total')
+            return month_arr
+
+        date_arr = {}
+        for dt in rrule(DAILY, dtstart=start_date, until=datetime.datetime.now()):
+            date_arr[dt.strftime("%Y-%m-%d")] = 0
+        for chart_record in chart_data:
+            done_at = chart_record.get('done_at').strftime("%Y-%m-%d")
+            date_arr[done_at] = chart_record.get('total')
+        return date_arr

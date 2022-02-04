@@ -2,8 +2,10 @@ import random
 from datetime import datetime, timedelta
 
 from django.db import migrations
+from django.db.models import Q
 from django.utils import timezone
 
+from api_account.constants import RoleData
 from api_order.constants import OrderStatus
 
 
@@ -13,14 +15,15 @@ def initial_data(apps, schema_editor):
     order_model = apps.get_model("api_order", "Order")
     account_model = apps.get_model("api_account", "Account")
 
-    completed_status = order_status_model.objects.get(name=OrderStatus.COMPLETED.value.get("name"))
-    pending_status = order_status_model.objects.get(name=OrderStatus.PENDING.value.get("name"))
-    delivering_status = order_status_model.objects.get(name=OrderStatus.DELIVERING.value.get("name"))
-    delivered_status = order_status_model.objects.get(name=OrderStatus.DELIVERED.value.get("name"))
-    confirmed_status = order_status_model.objects.get(name=OrderStatus.CONFIRMED.value.get("name"))
-    canceled_status = order_status_model.objects.get(name=OrderStatus.CANCELED.value.get("name"))
-    notreceivered_status = order_status_model.objects.get(name=OrderStatus.NOTRECEIVED.value.get("name"))
-    accounts = account_model.objects.filter(is_staff=1)
+    completed_status = order_status_model.objects.get(id=OrderStatus.COMPLETED.value.get("id"))
+    pending_status = order_status_model.objects.get(id=OrderStatus.PENDING.value.get("id"))
+    delivering_status = order_status_model.objects.get(id=OrderStatus.DELIVERING.value.get("id"))
+    delivered_status = order_status_model.objects.get(id=OrderStatus.DELIVERED.value.get("id"))
+    confirmed_status = order_status_model.objects.get(id=OrderStatus.CONFIRMED.value.get("id"))
+    canceled_status = order_status_model.objects.get(id=OrderStatus.CANCELED.value.get("id"))
+    notreceivered_status = order_status_model.objects.get(id=OrderStatus.NOTRECEIVED.value.get("id"))
+
+    accounts = account_model.objects.filter(Q(role_id=RoleData.STAFF.value.get('id')) | Q(role_id=RoleData.ADMIN.value.get('id')))
 
     orders = order_model.objects.all()
     progress_order = []
