@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from api_account.models import Account
 from api_account.permissions import StaffOrAdminPermission, AdminPermission
 from api_account.serializers import AccountInfoSerializer, GeneralInfoAccountSerializer, LoginAccountSerializer, \
-    ListAccountSerializer
+    ListAccountSerializer, ListStaffSerializer
 from api_account.services import AccountService
 from api_account.constants import RoleData
 from api_base.views import BaseViewSet
@@ -22,12 +22,11 @@ class AccountViewSet(BaseViewSet):
         "change_password": LoginAccountSerializer,
         "list": ListAccountSerializer,
         "customers": ListAccountSerializer,
-        "staffs": ListAccountSerializer
+        "staffs": ListStaffSerializer
     }
     permission_map = {
         "change_password": [StaffOrAdminPermission],
         "customers": [AdminPermission],
-        "partial_update": [],
         "staffs": [AdminPermission]
     }
 

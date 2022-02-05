@@ -5,6 +5,7 @@ from rest_framework.serializers import raise_errors_on_nested_writes
 
 from api_account.models import Account
 from api_order.constants import OrderStatus
+from api_order.models import Progress
 
 
 class AccountInfoSerializer(serializers.ModelSerializer):
@@ -57,7 +58,7 @@ class ListAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ('id', 'full_name', 'username', 'date_joined', 'order_count', 'total_sale', 'is_active')
+        fields = ('id', 'full_name', 'username', 'avatar', 'date_joined', 'order_count', 'total_sale', 'is_active')
 
     def get_full_name(self, obj):
         return '{} {}'.format(obj.first_name, obj.last_name)
@@ -67,4 +68,22 @@ class ListAccountSerializer(serializers.ModelSerializer):
 
     def get_total_sale(self, obj):
         data = obj.order.filter(order_status_id=OrderStatus.COMPLETED.value.get('id')).aggregate(sale=(Sum('total_price') - Sum('total_discount')))
+        return data['sale']
+
+
+class ListStaffSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    total_confirmed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Account
+        fields = ('id', 'full_name', 'username', 'avatar', 'date_joined', 'total_confirmed', 'is_active')
+
+    def get_full_name(self, obj):
+        return '{} {}'.format(obj.first_name, obj.last_name)
+
+    def get_total_confirmed(self, obj):
+        data = obj.progress.filter(order_status_id=OrderStatus.CONFIRMED.value.get('id'))\
+            .aggregate(sale=(Sum('order__total_price') - Sum('order__total_discount')))
+
         return data['sale']

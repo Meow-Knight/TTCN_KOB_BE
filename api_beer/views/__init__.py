@@ -5,3 +5,5 @@ from .Beer import BeerViewSet
 from .BeerPhoto import BeerPhotoViewSet
 from .BeerShipment import BeerShipmentViewSet
 from .Cart import CartViewSet
+from .Discount import DiscountViewSet
+from .BeerDiscount import BeerDiscountViewSet
