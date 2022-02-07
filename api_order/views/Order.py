@@ -143,8 +143,9 @@ class OrderViewSet(BaseViewSet):
     @action(methods=['post'], detail=False, url_path='create_order')
     def create_order(self, request, *args, **kwargs):
         carts = request.data['carts']
-        if OrderService.check_amount_order(carts) is False:
-            return Response({'detail': 'Sorry. There are not enough items in stock to fulfill your order'},
+        check_amount_order = OrderService.check_amount_order(carts)
+        if check_amount_order[0] is False:
+            return Response({'detail': check_amount_order[1], 'carts': check_amount_order[2]},
                             status=status.HTTP_400_BAD_REQUEST)
 
         order_status = OrderStatus.objects.get(name='PENDING')
@@ -163,22 +164,5 @@ class OrderViewSet(BaseViewSet):
         except:
             carts = []
 
-        total_price = 0.0
-        total_discount = 0.0
-        for cart in carts:
-            price = cart.beer.price
-            total_discount = total_discount + price * cart.amount
-            beer_discount = Beer.objects.get(pk=cart.beer_id).beer_discount.get()
-            if beer_discount:
-                discount = Discount.objects.get(pk=beer_discount.discount_id)
-                if discount.end_date > date.today():
-                    price = cart.beer.price - cart.beer.price * beer_discount.discount_percent / 100
-            total_price = total_price + price * cart.amount
-        total_discount = total_discount - total_price
-        user = GeneralInfoAccountSerializer(user)
-        res_carts = BeerDetailCartSerializer(carts, many=True)
-        res_data = {'user': user.data,
-                    'carts': list(res_carts.data),
-                    'total_price': total_price,
-                    'total_discount': total_discount}
+        res_data = OrderService.beer_checkout(user, carts)
         return Response(res_data, status=status.HTTP_200_OK)
