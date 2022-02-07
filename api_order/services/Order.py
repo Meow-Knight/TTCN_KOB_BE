@@ -1,7 +1,11 @@
+import datetime
+
 from django.db import transaction
 from django.db.models import Sum
 
-from api_beer.models import Beer, Cart
+from api_account.serializers import GeneralInfoAccountSerializer
+from api_beer.models import Beer, Cart, BeerDiscount
+from api_beer.serializers import BeerDetailCartSerializer
 from api_order import constants
 from api_account.constants.Data import RoleData
 from api_order.constants import Data
@@ -95,24 +99,36 @@ class OrderService:
     @classmethod
     @transaction.atomic
     def check_amount_order(cls, carts):
+        beer_ids = []
+        cart_error = []
         for cart in carts:
-            b = Beer.objects.get(pk=cart.get('beer'))
-            order_detail = b.order_detail.all().aggregate(Sum('amount'))
-            if order_detail.get('amount__sum') is None:
-                order_detail = 0
+            beer_ids.append(cart.get('beer'))
+        beers = Beer.objects.filter(pk__in=beer_ids)
+        if beers.exists():
+            carts = Cart.objects.filter(beer_id__in=beer_ids)
+            if carts.exists():
+                for cart in carts:
+                    beer = cls.find_beer_by_cart(cart, beers)
+                    order_detail = beer.order_detail.all().aggregate(Sum('amount'))
+                    if order_detail.get('amount__sum') is None:
+                        order_detail = 0
+                    else:
+                        order_detail = order_detail.get('amount__sum')
+
+                    beer_shipment = beer.beer_shipment.all().aggregate(Sum('amount'))
+                    if beer_shipment.get('amount__sum') is None:
+                        cart_error.append(cart)
+                    else:
+                        beer_shipment = beer_shipment.get('amount__sum')
+
+                    if cart.amount + order_detail > beer_shipment:
+                        cart_error.append(cart)
+
+            if len(cart_error) > 0:
+                carts = BeerDetailCartSerializer(cart_error, many=True)
+                return [False, 'Sorry. There are not enough items in stock to fulfill your order', carts.data]
             else:
-                order_detail = order_detail.get('amount__sum')
-
-            beer_shipment = b.beer_shipment.all().aggregate(Sum('amount'))
-            if beer_shipment.get('amount__sum') is None:
-                return False
-            else:
-                beer_shipment = beer_shipment.get('amount__sum')
-
-            if cart.get('amount') + order_detail > beer_shipment:
-                return False
-
-        return True
+                return [True]
 
     @classmethod
     @transaction.atomic
@@ -166,3 +182,50 @@ class OrderService:
             res['order_details'] = order_detail_ser.data
         return res
 
+    @classmethod
+    @transaction.atomic
+    def find_beer_by_cart(cls, cart, beers):
+        for beer in beers:
+            if cart.beer.id == beer.id:
+                return beer
+
+    @classmethod
+    @transaction.atomic
+    def find_beer_discount_by_beer(cls, beer, beer_discounts):
+        for beer_discount in beer_discounts:
+            if beer_discount.beer.id == beer.id:
+                return beer_discount
+
+    @classmethod
+    @transaction.atomic
+    def beer_checkout(cls, user, carts):
+        beer_ids = []
+        total_price = 0.0
+        total_discount = 0.0
+        for cart in carts:
+            beer_ids.append(cart.beer.id)
+        beers = Beer.objects.filter(pk__in=beer_ids)
+        if beers.exists():
+            beer_discounts = BeerDiscount.objects.filter(beer__in=beer_ids,
+                                                         discount__start_date__lte=datetime.date.today(),
+                                                         discount__end_date__gte=datetime.date.today(),
+                                                         discount__is_activate=True)
+
+            for cart in carts:
+                beer = cls.find_beer_by_cart(cart, beers)
+                if beer is not None:
+                    price = cart.beer.price
+                    total_discount = total_discount + price * cart.amount
+                    beer_discount = cls.find_beer_discount_by_beer(beer, beer_discounts)
+                    if beer_discount is not None:
+                        price = cart.beer.price - cart.beer.price * beer_discount.discount_percent / 100
+                    total_price = total_price + price * cart.amount
+            total_discount = total_discount - total_price
+
+        user = GeneralInfoAccountSerializer(user)
+        res_carts = BeerDetailCartSerializer(carts, many=True)
+        res_data = {'user': user.data,
+                    'carts': list(res_carts.data),
+                    'total_price': total_price,
+                    'total_discount': total_discount}
+        return res_data
