@@ -5,9 +5,11 @@ from dateutil.rrule import rrule, MONTHLY, DAILY
 from django.db import transaction, connection
 
 from api_beer.constants import SaleDurationEnum, SaleType
-from api_beer.models import BeerPhoto, Beer, Discount
+from api_beer.models import BeerPhoto, Beer, Discount, BeerShipment
 from api_beer.serializers import ItemBeerSerializer, DiscountWithItemBeerSerializer, TopBeerSerializer
 from api_beer.services import BeerPhotoService
+from api_order.constants import OrderStatus
+from api_order.models import Order, OrderDetail
 
 
 class BeerService:
@@ -85,7 +87,6 @@ class BeerService:
         }
         return switcher.get(enum_type)
 
-
     @classmethod
     def get_chart_data(cls, enum_duration, enum_type):
         date_query = cls.get_date_query(enum_duration)
@@ -95,7 +96,7 @@ class BeerService:
                         JOIN order_detail od ON od.order_id = o.id
                         WHERE o.done_at IS NOT NULL AND {}
                         GROUP BY DATE(o.done_at)
-                        ORDER BY done_at DESC;""".format(cls.get_sum_field(enum_type), date_query,))
+                        ORDER BY done_at DESC;""".format(cls.get_sum_field(enum_type), date_query, ))
         columns = [column[0] for column in cursor.description]
         results = []
         for row in cursor.fetchall():
@@ -125,3 +126,52 @@ class BeerService:
             done_at = chart_record.get('done_at').strftime("%Y-%m-%d")
             date_arr[done_at] = chart_record.get('total')
         return date_arr
+
+    @classmethod
+    @transaction.atomic
+    def get_ids(cls, items):
+        ids = []
+        for item in items:
+            ids.append(item.id)
+        return ids
+
+    @classmethod
+    @transaction.atomic
+    def get_data_for_sales_statistics(cls):
+        completed_status = OrderStatus.COMPLETED.value.get("id")
+        orders = Order.objects.filter(order_status=completed_status)
+        order_ids = cls.get_ids(orders)
+        order_details = OrderDetail.objects.filter(order__in=order_ids)
+        order_detail_ids = cls.get_ids(order_details)
+        beers = Beer.objects.filter(order_detail__in=order_detail_ids).distinct()
+        beer_ids = cls.get_ids(beers)
+        beer_shipments = BeerShipment.objects.filter(beer__in=beer_ids)
+        return [orders, order_details, beer_shipments]
+
+    @classmethod
+    @transaction.atomic
+    def get_sales_statistics(cls, request):
+        my_data = cls.get_data_for_sales_statistics()
+        orders = my_data[0]
+        order_details = my_data[1]
+        beer_shipments = my_data[2]
+        total_revenue = 0.0
+        total_sales = 0.0
+        total_profit = 0.0
+        total_root = 0.0
+        if orders.exists():
+            for order in orders:
+                total_revenue = total_revenue + order.total_price
+
+        if order_details.exists():
+            for order_detail in order_details:
+                total_sales = total_sales + order_detail.amount
+
+        if beer_shipments.exists():
+            for beer_shipment in beer_shipments:
+                total_root = total_root + beer_shipment.price * beer_shipment.amount
+
+        total_profit = total_revenue - total_root
+
+        res_data = {"total_revenue": total_revenue, "total_sales": total_sales, "total_profit": total_profit}
+        return res_data
