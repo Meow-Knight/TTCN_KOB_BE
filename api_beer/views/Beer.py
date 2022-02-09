@@ -122,3 +122,8 @@ class BeerViewSet(BaseViewSet):
         chart_data = BeerService.get_chart_data(enum_duration, enum_type)
         response = BeerService.format_chart_data(chart_data, enum_duration)
         return Response(response, status=status.HTTP_200_OK)
+
+    @action(methods=['get'], detail=False)
+    def sales_statistics(self, request, *args, **kwargs):
+        res_data = BeerService.get_sales_statistics(request)
+        return Response(res_data, status=status.HTTP_200_OK)
