@@ -40,8 +40,8 @@ class DiscountService:
                      & Q(discount__end_date__gte=discount_start_date))
                     | (Q(discount__start_date__lte=discount_end_date)
                        & Q(discount__end_date__gte=discount_end_date))
-                    | (Q(start_date__gte=discount_start_date)
-                       & Q(start_date__lte=discount_end_date)),
+                    | (Q(discount__start_date__gte=discount_start_date)
+                       & Q(discount__start_date__lte=discount_end_date)),
                     beer_id__in=beer_ids
                 )
                 if beer_discounts_existed_query_set.exists():
