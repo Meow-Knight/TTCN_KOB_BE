@@ -9,7 +9,7 @@ from api_account.serializers import GeneralInfoAccountSerializer
 from api_base.pagination import PageNumberWithSizePagination
 from api_base.views import BaseViewSet
 from api_beer.models import Cart, Beer, Discount
-from api_beer.serializers import BeerDetailCartSerializer
+from api_beer.serializers import BeerDetailCartSerializer, CartSerializer
 from api_order.models import Order, OrderStatus
 from api_order.serializers import OrderSerializer, CUOrderSerializer, RetrieveOrderSerializer, ListOrderSerializer, ListOrderAdminSerializer
 from api_order.services import OrderService
@@ -26,7 +26,8 @@ class OrderViewSet(BaseViewSet):
         "list_order": [CustomerPermission],
         "order_detail": [CustomerPermission],
         "cancel_order": [CustomerPermission],
-        "user_change_order_status": [CustomerPermission]
+        "user_change_order_status": [CustomerPermission],
+        "check_amount_order": [CustomerPermission]
     }
     pagination_class = PageNumberWithSizePagination
 
@@ -166,3 +167,18 @@ class OrderViewSet(BaseViewSet):
 
         res_data = OrderService.beer_checkout(user, carts)
         return Response(res_data, status=status.HTTP_200_OK)
+
+    @action(methods=['get'], detail=False)
+    def check_amount_order(self, request):
+        user = request.user
+        carts = Cart.objects.filter(account=user.id)
+        if carts.exists():
+            carts = CartSerializer(carts, many=True).data
+            res_data = OrderService.check_amount_order(carts)
+            if res_data[0] is False:
+                return Response({'detail': res_data[1], 'carts': res_data[2]},
+                                status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return  Response({"detail": "Successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "There is not cart in your cart"}, status=status.HTTP_400_BAD_REQUEST)
