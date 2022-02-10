@@ -1,5 +1,5 @@
 from django.contrib.auth.hashers import make_password
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Count
 from rest_framework import serializers
 from rest_framework.serializers import raise_errors_on_nested_writes
 
@@ -83,7 +83,6 @@ class ListStaffSerializer(serializers.ModelSerializer):
         return '{} {}'.format(obj.first_name, obj.last_name)
 
     def get_total_confirmed(self, obj):
-        data = obj.progress.filter(order_status_id=OrderStatus.CONFIRMED.value.get('id'))\
-            .aggregate(sale=(Sum('order__total_price') - Sum('order__total_discount')))
+        data = obj.progress.filter(order_status_id=OrderStatus.CONFIRMED.value.get('id')).count()
 
-        return data['sale']
+        return data
