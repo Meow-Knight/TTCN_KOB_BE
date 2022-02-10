@@ -25,6 +25,8 @@ class LoginView(APIView):
         account = Account.objects.filter(username=username)
         if account.exists():
             account = account.first()
+            if not account.is_active:
+                return Response({"details": "This account is disabled. Please contact admin..."}, status=status.HTTP_400_BAD_REQUEST)
             if check_password(password, account.password):
                 token = RefreshToken.for_user(account)
                 response = {'email': account.email, 'access_token': str(token.access_token),
@@ -74,6 +76,8 @@ class MyGoogleLogin(APIView):
             account.save()
         else:
             account = account_qs.first()
+            if not account.is_active:
+                return Response({"details": "This account is disabled. Please contact admin..."}, status=status.HTTP_400_BAD_REQUEST)
 
         token = RefreshToken.for_user(account)
         response = {'email': account.email, 'access_token': str(token.access_token), 'refresh_token': str(token)}

@@ -30,7 +30,7 @@ class BeerViewSet(BaseViewSet):
         "user_search": [],
         "get_all_with_name": [],
         "top": [AdminPermission],
-        "chart_data": [AdminPermission],
+        "chart_data": [],
     }
 
     def create(self, request, *args, **kwargs):
