@@ -76,6 +76,9 @@ class OrderService:
         new_status = cls.my_switcher(key_change, order_status, role)
         if new_status is not None:
             order.order_status = new_status
+            completed_status = constants.OrderStatus.COMPLETED.value.get("name")
+            if new_status.name == completed_status:
+                order.done_at = datetime.datetime.now()
             order.save()
             cls.add_progress_order(order, new_status, request)
             res['success'] = True
