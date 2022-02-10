@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Sum
 
 from api_account.serializers import GeneralInfoAccountSerializer
+from api_base.services import CurrencyConvertor
 from api_beer.models import Beer, Cart, BeerDiscount
 from api_beer.serializers import BeerDetailCartSerializer
 from api_order import constants
@@ -227,5 +228,7 @@ class OrderService:
         res_data = {'user': user.data,
                     'carts': list(res_carts.data),
                     'total_price': total_price,
+                    'total_price_usd': CurrencyConvertor.convert_vnd_to_usd(total_price),
                     'total_discount': total_discount}
+
         return res_data
