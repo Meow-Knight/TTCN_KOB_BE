@@ -34,7 +34,9 @@ class BeerService:
     def get_homepage_data(cls, random_amount):
         random_query_set = BeerService.get_random_beers(random_amount)
         random_serializer = ItemBeerSerializer(random_query_set, many=True)
-        discount_query_set = Discount.objects.all()
+        discount_query_set = Discount.objects.filter(start_date__lte=datetime.date.today(),
+                                                     end_date__gte=datetime.date.today(),
+                                                     is_activate=True)
         discount_serializer = DiscountWithItemBeerSerializer(discount_query_set, many=True)
 
         return {'randoms': random_serializer.data, 'discounts': discount_serializer.data}
