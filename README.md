@@ -37,7 +37,7 @@ python manage.py migrate
 
 **Creating a empty migration file manually:**
 ```
-python manage.py makemigrations app --empty
+python manage.py makemigrations <app> --empty
 ```
 
 #Django
@@ -45,6 +45,11 @@ python manage.py makemigrations app --empty
 **Creating a new app (module):**
 ```
 python manage.py startapp *module_name*
+```
+
+**Creating a superuser:**
+```
+python manage.py createsuperuser
 ```
 
 # Dump notes
